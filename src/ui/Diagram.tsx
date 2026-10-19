@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent } from 'react'
-import type { Lang, Recipe, RecipeNode } from '../model/types'
-import { qtyText } from '../store/format'
+import type { Lang, Recipe, RecipeNode, SubrecipeNode } from '../model/types'
+import { formatQty, qtyText } from '../store/format'
 import { solveLayout, transpose, type Cell, type Layout } from '../solver/layout'
 import { formatSpan, nodeSpan } from '../solver/time'
 import type { Translate } from '../i18n'
@@ -35,8 +35,10 @@ type Props = {
   /** §4.3 — done state is in memory only; a refresh clears it. */
   done?: Set<string>
   onToggleDone?: (nodeId: string) => void
-  onOpenRef?: (recipeId: string) => void
-  knownRecipeIds?: Set<string>
+  /** Opens a subrecipe, scaled to the servings of it this recipe needs (§2.2). */
+  onOpenRef?: (recipeId: string, servings: number) => void
+  /** Recipes a subrecipe node may name, by id — the recipe itself excluded. */
+  recipes?: Map<string, Recipe>
   edit?: DiagramEdit
 }
 
@@ -198,7 +200,7 @@ function CellView({
   done,
   onToggleDone,
   onOpenRef,
-  knownRecipeIds,
+  recipes,
   picked,
   onPick,
   lifted,
@@ -254,6 +256,15 @@ function CellView({
             </span>
           </span>
         ))
+      ) : node?.type === 'subrecipe' ? (
+        <SubrecipeCell
+          node={node}
+          child={recipes?.get(node.ref)}
+          multiplier={multiplier}
+          lang={lang}
+          t={t}
+          onOpen={onOpenRef}
+        />
       ) : (
         <span className="cell-main">{cell.text}</span>
       )}
@@ -261,24 +272,6 @@ function CellView({
       {node?.type === 'wait' && (node.maxMinutes ?? node.minutes) > 0 && (
         <span className="cell-sub">{formatSpan(nodeSpan(node))}</span>
       )}
-
-      {node?.type === 'ingredient' &&
-        node.ref &&
-        (knownRecipeIds?.has(node.ref) ? (
-          <button
-            type="button"
-            className="subrecipe-link"
-            onClick={(e) => {
-              e.stopPropagation()
-              onOpenRef?.(node.ref!)
-            }}
-          >
-            {t('recipe.openRef')} →
-          </button>
-        ) : (
-          // §2.2 — a reference to a missing recipe renders as a visible marker.
-          <span className="subrecipe-missing">⚠ {t('recipe.missingRef')}</span>
-        ))}
 
       {cell.refOut.map((r) => (
         <span className="cell-ref" key={`out-${r}`}>
@@ -291,5 +284,53 @@ function CellView({
         </span>
       ))}
     </td>
+  )
+}
+
+/**
+ * `2 tart bases · Base à tarte`, read live from the child. Opening it passes the amount
+ * along as servings, so the child opens already scaled to what this recipe needs.
+ */
+function SubrecipeCell({
+  node,
+  child,
+  multiplier,
+  lang,
+  t,
+  onOpen,
+}: {
+  node: SubrecipeNode
+  child?: Recipe
+  multiplier: number
+  lang: Lang
+  t: Translate
+  onOpen?: (recipeId: string, servings: number) => void
+}) {
+  const needed = node.qty * multiplier
+  const unit = child?.servingsUnit || t('editor.servingsUnitHint')
+  return (
+    <>
+      <span className="cell-main">
+        <span className="cell-qty">
+          {formatQty(needed, lang)} {unit}
+        </span>
+        {child?.title ?? node.ref}
+      </span>
+      {child
+        ? onOpen && (
+            <button
+              type="button"
+              className="subrecipe-link"
+              onClick={(e) => {
+                e.stopPropagation()
+                onOpen(child.id, needed)
+              }}
+            >
+              {t('recipe.openRef')} →
+            </button>
+          )
+        : // §2.2 — a reference to a missing recipe renders as a visible marker.
+          node.ref && <span className="subrecipe-missing">⚠ {t('recipe.missingRef')}</span>}
+    </>
   )
 }

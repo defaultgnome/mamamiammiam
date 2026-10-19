@@ -33,8 +33,13 @@ import type {
   Recipe,
   RecipeNode,
   SplitNode,
+  SubrecipeNode,
   WaitNode,
 } from '../model/types'
+import { isSource } from '../model/types'
+import { canUseAsSubrecipe } from '../model/subrecipes'
+import { RecipePicker } from '../ui/RecipePicker'
+import { servesText } from '../store/format'
 import type { Translate } from '../i18n'
 import { wouldCycle, type Warning } from '../solver/layout'
 import { layerColumns } from '../solver/columns'
@@ -87,12 +92,15 @@ const SPAWN_SOCKET_OFFSET = 26
  *    and leaves React Flow's own node objects untouched, so nothing else re-renders.
  */
 type NodeApi = {
+  /** the recipe being edited — what a subrecipe picker must not offer */
+  recipeId: string
   nodes: Map<string, RecipeNode>
   patch: (id: string, patch: Partial<RecipeNode>) => void
   remove: (id: string) => void
   duplicate: (id: string) => void
 }
 const NodeApiContext = createContext<NodeApi>({
+  recipeId: '',
   nodes: new Map(),
   patch: () => {},
   remove: () => {},
@@ -151,6 +159,8 @@ function estimateHeight(n: RecipeNode): number {
   switch (n.type) {
     case 'ingredient':
       return 72 + n.options.length * 200
+    case 'subrecipe':
+      return 170
     case 'action':
       return 96
     case 'wait':
@@ -178,8 +188,8 @@ function FlowNode({ id, selected }: NodeProps) {
 
   return (
     <div className={`flow-node k-${node.type}${selected ? ' selected' : ''}`}>
-      {/* An ingredient is a source: it takes no inputs, so it grows no input socket. */}
-      {node.type !== 'ingredient' && (
+      {/* A source (ingredient, subrecipe) takes no inputs, so it grows no input socket. */}
+      {!isSource(node) && (
         <>
           {/*
            * Landing a connection on the socket dot is finicky, so the whole node body is
@@ -234,6 +244,7 @@ function FlowNode({ id, selected }: NodeProps) {
 
       <div className="nf-body">
         {node.type === 'ingredient' && <IngredientFields node={node} set={set} t={t} />}
+        {node.type === 'subrecipe' && <SubrecipeFields node={node} set={set} t={t} />}
         {node.type === 'action' && <ActionFields node={node} set={set} t={t} />}
         {node.type === 'wait' && <WaitFields node={node} set={set} t={t} />}
         {node.type === 'split' && <SplitFields node={node} set={set} t={t} />}
@@ -281,13 +292,61 @@ function IngredientFields({ node, set, t }: FieldProps<IngredientNode>) {
       >
         {t('editor.addOption')}
       </button>
-      <Field label={t('editor.ref')}>
-        <input
+    </>
+  )
+}
+
+/**
+ * §2.2 — the child is picked by title, never typed as an id. Anything that already uses
+ * this recipe is left out of the list: picking it would close a loop.
+ */
+function SubrecipeFields({ node, set, t }: FieldProps<SubrecipeNode>) {
+  const { library, lang } = useApp()
+  const { recipeId } = useContext(NodeApiContext)
+  const child = library.find((r) => r.id === node.ref)
+  const choices = useMemo(
+    () => library.filter((r) => canUseAsSubrecipe(library, recipeId, r.id)),
+    [library, recipeId],
+  )
+  return (
+    <>
+      {/* A div, not a <label>: a click on a result would re-focus the box behind it. */}
+      <div className="nf-field">
+        <span>{t('editor.subrecipe')}</span>
+        <RecipePicker
           className="nodrag"
-          type="text"
-          value={node.ref ?? ''}
-          onChange={(e) => set({ ref: e.target.value || undefined } as Partial<RecipeNode>)}
+          label={child?.title ?? node.ref}
+          recipes={choices}
+          onPick={(r) => set({ ref: r.id } as Partial<RecipeNode>)}
+          describe={(r) => servesText(t, r.servings, r.servingsUnit, lang)}
+          placeholder={t('editor.subrecipeSearch')}
+          empty={t('editor.noMatch')}
         />
+      </div>
+      {node.ref &&
+        (child ? (
+          // A new tab: leaving the editor mid-edit would drop the unsaved draft.
+          <a
+            className="nf-open nodrag"
+            href={`#/recipe/${encodeURIComponent(child.id)}`}
+            target="_blank"
+            rel="noopener"
+          >
+            {t('editor.openSubrecipe')} ↗
+          </a>
+        ) : (
+          <span className="nf-hint">⚠ {t('recipe.missingRef')}</span>
+        ))}
+      <Field label={t('editor.qty')}>
+        <span className="nf-suffixed">
+          <NumberField
+            className="nodrag"
+            min={0.01}
+            value={node.qty}
+            onChange={(qty) => set({ qty } as Partial<RecipeNode>)}
+          />
+          <span>{child?.servingsUnit || t('editor.servingsUnitHint')}</span>
+        </span>
       </Field>
     </>
   )
@@ -562,6 +621,7 @@ function Canvas({
 
   const api = useMemo<NodeApi>(
     () => ({
+      recipeId: recipe.id,
       nodes: new Map(recipe.nodes.map((n) => [n.id, n])),
       patch: onPatchNode,
       remove: (id) => onDeleteNodes([id]),
@@ -572,7 +632,7 @@ function Canvas({
         seedPosition(onDuplicateNode(id), from.x + 38, from.y + 38)
       },
     }),
-    [recipe.nodes, onPatchNode, onDeleteNodes, onDuplicateNode, seedPosition],
+    [recipe.id, recipe.nodes, onPatchNode, onDeleteNodes, onDuplicateNode, seedPosition],
   )
 
   // Mirror the recipe into React Flow's node list. Only membership and selection live

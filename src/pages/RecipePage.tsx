@@ -6,6 +6,7 @@ import { Diagram, type Orientation } from '../ui/Diagram'
 import { LangThemeControls, TopBar } from '../ui/TopBar'
 import { useWakeLock } from '../ui/useWakeLock'
 import { isModifiedLocally } from '../store/storage'
+import { usedIn } from '../model/subrecipes'
 import { servesText } from '../store/format'
 import { NumberField } from '../ui/NumberField'
 
@@ -16,14 +17,15 @@ const ShareDialog = lazy(() =>
 
 const PRESETS = [1, 2, 4, 6, 8]
 
-export function RecipePage({ id }: { id: string }) {
+export function RecipePage({ id, initialServings }: { id: string; initialServings?: number }) {
   const { library, state, dispatch, t, lang } = useApp()
   const recipe = library.find((r) => r.id === id)
 
   // §4.3 / §4.4 — done marks and the multiplier are in memory only. A refresh clears
   // them; they are about this cooking session, not about the recipe.
   const [done, setDone] = useState<Set<string>>(() => new Set())
-  const [servings, setServings] = useState<number | null>(null)
+  // A parent opening this as its subrecipe says how much of it it needs (§2.2).
+  const [servings, setServings] = useState<number | null>(initialServings ?? null)
   // Horizontal everywhere, phones included: time running left-to-right is what makes
   // the picture readable as a recipe, and a narrow screen scrolls sideways far more
   // happily than it gives up that reading. Vertical stays one tap away.
@@ -34,10 +36,11 @@ export function RecipePage({ id }: { id: string }) {
   // A recipe may not reference itself (§2.2). Excluding its own id makes a self
   // reference render as the visible 'missing recipe' marker rather than a link that
   // goes nowhere.
-  const knownIds = useMemo(
-    () => new Set(library.map((r) => r.id).filter((rid) => rid !== id)),
+  const recipesById = useMemo(
+    () => new Map(library.filter((r) => r.id !== id).map((r) => [r.id, r])),
     [library, id],
   )
+  const parents = useMemo(() => usedIn(library, id), [library, id])
 
   if (!recipe) {
     return (
@@ -91,6 +94,17 @@ export function RecipePage({ id }: { id: string }) {
           ))}
         </div>
         {recipe.note && <div className="note">{recipe.note}</div>}
+        {/* §2.2 — the end products this recipe goes into, found from their side. */}
+        {parents.length > 0 && (
+          <div className="used-in">
+            <span className="hint">{t('recipe.usedIn')}</span>
+            {parents.map((r) => (
+              <a key={r.id} className="tag" href={`#/recipe/${encodeURIComponent(r.id)}`}>
+                {r.title}
+              </a>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="servings">
@@ -153,8 +167,10 @@ export function RecipePage({ id }: { id: string }) {
         orientation={orientation}
         done={done}
         onToggleDone={toggleDone}
-        knownRecipeIds={knownIds}
-        onOpenRef={(refId) => navigate(`/recipe/${refId}`)}
+        recipes={recipesById}
+        onOpenRef={(refId, needed) =>
+          navigate(`/recipe/${refId}`, new URLSearchParams({ servings: String(needed) }))
+        }
       />
 
       {modified && (

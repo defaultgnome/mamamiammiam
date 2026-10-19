@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toBlob } from 'html-to-image'
 import type { Recipe } from '../model/types'
 import { useApp } from '../store/app'
@@ -17,7 +17,11 @@ type Props = {
 
 /** §5 — the diagram is cloned into an offscreen container at full size, unclipped. */
 export function ShareDialog({ recipe, multiplier, servings, orientation, onClose }: Props) {
-  const { t, lang, theme } = useApp()
+  const { t, lang, theme, library } = useApp()
+  const recipes = useMemo(
+    () => new Map(library.filter((r) => r.id !== recipe.id).map((r) => [r.id, r])),
+    [library, recipe.id],
+  )
   const [shareTheme, setShareTheme] = useState<'light' | 'dark'>(theme)
   const [shareOrientation, setShareOrientation] = useState<Orientation>(orientation)
   const [blob, setBlob] = useState<Blob | null>(null)
@@ -238,6 +242,7 @@ export function ShareDialog({ recipe, multiplier, servings, orientation, onClose
             lang={lang}
             t={t}
             orientation={shareOrientation}
+            recipes={recipes}
           />
           <div className="brandmark">Mama Miam Miam</div>
         </div>

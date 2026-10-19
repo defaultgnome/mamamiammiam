@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { useApp } from '../store/app'
 import { LangThemeControls, TopBar } from '../ui/TopBar'
 import { downloadText, exportBundle, parseImport } from '../store/storage'
+import { findSubrecipeCycle } from '../model/subrecipes'
 
 export function SettingsPage() {
   const { library, state, dispatch, t } = useApp()
@@ -17,6 +18,20 @@ export function SettingsPage() {
     const recipes = parseImport(raw)
     if (!recipes || recipes.length === 0) {
       setMessage(t('settings.importBad'))
+      return
+    }
+    // §2.2 — an import may close a subrecipe loop that neither side shows on its own.
+    const incoming = new Set(recipes.map((r) => r.id))
+    const cycle = findSubrecipeCycle([
+      ...library.filter((r) => !incoming.has(r.id)),
+      ...recipes,
+    ])
+    if (cycle) {
+      const title = (rid: string) =>
+        recipes.find((r) => r.id === rid)?.title ??
+        library.find((r) => r.id === rid)?.title ??
+        rid
+      setMessage(t('settings.importCycle', { a: title(cycle[0]), b: title(cycle[1]) }))
       return
     }
     dispatch({ type: 'importRecipes', recipes })

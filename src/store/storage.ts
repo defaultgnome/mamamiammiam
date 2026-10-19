@@ -99,16 +99,24 @@ function migrateNode(n: RecipeNode): RecipeNode {
   const base = { ...n, inputs: n.inputs ?? [] }
   switch (base.type) {
     case 'ingredient': {
-      // v1 kept a single ingredient's fields on the node itself.
-      const legacy = base as typeof base & Partial<IngredientOption>
+      // v1 kept a single ingredient's fields on the node itself, a subrecipe among them.
+      const legacy = base as typeof base & Partial<IngredientOption> & { ref?: string }
       const raw = base.options?.length ? base.options : [legacy]
-      return {
-        id: base.id,
-        type: 'ingredient',
-        inputs: [],
-        options: raw.map(migrateOption),
-        ref: base.ref || undefined,
+      const options = raw.map(migrateOption)
+      if (legacy.ref) {
+        return {
+          id: base.id,
+          type: 'subrecipe',
+          inputs: [],
+          ref: legacy.ref,
+          qty: options[0].qty && options[0].qty > 0 ? options[0].qty : 1,
+        }
       }
+      return { id: base.id, type: 'ingredient', inputs: [], options }
+    }
+    case 'subrecipe': {
+      const qty = Number(base.qty)
+      return { ...base, inputs: [], ref: base.ref ?? '', qty: qty > 0 ? qty : 1 }
     }
     case 'wait': {
       const minutes = Number(base.minutes) || 0

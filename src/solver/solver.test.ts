@@ -231,6 +231,20 @@ describe('critical path', () => {
 const rowIds = (r: Recipe) => solveLayout(r).rows.map((x) => x.id)
 
 describe('row ordering', () => {
+  it('gives a subrecipe a row of its own, like any ingredient', () => {
+    const base: RecipeNode = { id: 'base', type: 'subrecipe', inputs: [], ref: 'pate', qty: 1 }
+    const layout = solveLayout(recipe([ing('choc'), base, act('fill', ['base', 'choc'])]))
+    expect(layout.rows.map((r) => r.id).sort()).toEqual(['base', 'choc'])
+    expect(layout.cells.find((c) => c.nodeId === 'base')?.kind).toBe('subrecipe')
+    expect(layout.warnings).toEqual([])
+  })
+
+  it('flags a subrecipe node with nothing picked', () => {
+    const blank: RecipeNode = { id: 'b', type: 'subrecipe', inputs: [], ref: '', qty: 1 }
+    const layout = solveLayout(recipe([blank, act('use', ['b'])]))
+    expect(layout.warnings.find((w) => w.kind === 'no-subrecipe')?.nodeIds).toEqual(['b'])
+  })
+
   it('floats the stream with the most waiting ahead of it to the top', () => {
     const nodes = [
       ing('quick'),

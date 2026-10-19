@@ -107,20 +107,35 @@ quantity of it (§2.2).
 All nodes share `{ id, type, inputs: string[] }`. `inputs` holds node ids. Type changes
 appearance and validation only — the renderer and solver treat nodes uniformly.
 
-| type         | params                                                        | rules                                                                                             |
-| ------------ | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `ingredient` | `options: { name, qty?, unit?, altQty?, altUnit? }[]`, `ref?` | Source: `inputs` is always empty. `unit` is free text, not an enum. `ref` is another recipe's id. |
-| `action`     | `label`                                                       | Free text. N inputs → 1 output.                                                                   |
-| `split`      | `portions: { percent, label }[]`                              | 1 input → N outputs.                                                                              |
-| `wait`       | `minutes`, `maxMinutes?`, `label`                             | 1 input → 1 output. `maxMinutes` set ⇒ a range, always > `minutes`.                               |
+| type         | params                                                | rules                                                                                      |
+| ------------ | ----------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `ingredient` | `options: { name, qty?, unit?, altQty?, altUnit? }[]` | Source: `inputs` is always empty. `unit` is free text, not an enum.                        |
+| `subrecipe`  | `ref`, `qty`                                          | Source, like an ingredient. `ref` is another recipe's id; `qty` is in that recipe's yield. |
+| `action`     | `label`                                               | Free text. N inputs → 1 output.                                                            |
+| `split`      | `portions: { percent, label }[]`                      | 1 input → N outputs.                                                                       |
+| `wait`       | `minutes`, `maxMinutes?`, `label`                     | 1 input → 1 output. `maxMinutes` set ⇒ a range, always > `minutes`.                        |
 
 **There is no merge node.** Any node with two or more inputs _is_ a merge, rendered as a
 cell spanning those rows.
 
-**`ingredient.ref`** marks a subrecipe. It renders as a normal ingredient row plus a
-button that navigates to the referenced recipe. v1 does **not** inline the child graph and
-does **not** propagate the multiplier across the boundary. A recipe may not reference
-itself. A reference to a missing recipe renders as a visible "missing recipe" marker.
+**`subrecipe`** uses another recipe as an ingredient. It stores only the child's id and
+how many of the child's yield (`servingsUnit`, §2.1) it needs; the name and unit are read
+live from the child, so `qty 2` on a node pointing at "Base à tarte, for 1 tart base"
+renders `2 tart base · Base à tarte`. It renders as an ingredient row plus a button that
+opens the child **already scaled**: `qty × the parent's multiplier` is passed along as the
+child's servings (`#/recipe/base-a-tarte?servings=2`). The child graph is **not** inlined.
+
+In the editor the child is picked from a search box over recipe titles, never typed as an
+id. A recipe may not use itself, nor anything that already uses it, however far up: such
+recipes are left out of the picker, and an import that would close such a loop is refused.
+A reference to a missing recipe renders as a visible "missing recipe" marker. A node with
+nothing picked yet is flagged by a `no-subrecipe` warning.
+
+The reverse link is computed, never stored: a recipe's page lists, under **Used in**, every
+recipe with a `subrecipe` node pointing at it.
+
+Format v1 marked a subrecipe with `ingredient.ref`; such an ingredient migrates into a
+`subrecipe` node on load, keeping its quantity.
 
 **`ingredient.options`** are the ingredient and its alternatives — `250 g butter`, or
 `250 g margarine` — any of which fills the same slot. There is always at least one; the
@@ -339,7 +354,8 @@ Code-split, so the viewer bundle ships none of the editor or React Flow.
 
 ### 6.3 Recipe page
 
-Header (title, time breakdown, servings/multiplier control, note) above the diagram.
+Header (title, time breakdown, servings/multiplier control, note, **Used in** links)
+above the diagram. A `?servings=` query param (§2.2) sets the starting servings.
 Orientation toggle, share button, screen wake lock (§8).
 
 ---
@@ -429,7 +445,6 @@ This is the only code where a subtle bug produces a silently wrong diagram.
 
 - Tag chips and max-time filters on the list page.
 - Subrecipe inlining (splicing a child graph into the parent).
-- Multiplier propagation across a subrecipe boundary (needs a `yield` field per recipe).
 - Structured tools / provenance fields (v1 folds these into free-text `note`).
 - Richer search (instruction text, dedicated ingredient picker).
 - Per-recipe file storage with a search index, if the library outgrows one bundle.

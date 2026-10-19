@@ -5,7 +5,7 @@ export const BUNDLE_VERSION = 1
 
 export type Lang = 'en' | 'fr'
 
-export type NodeType = 'ingredient' | 'action' | 'split' | 'wait'
+export type NodeType = 'ingredient' | 'subrecipe' | 'action' | 'split' | 'wait'
 
 export type BaseNode = {
   id: string
@@ -36,8 +36,18 @@ export type IngredientNode = BaseNode & {
    * first is the one the recipe is written around.
    */
   options: IngredientOption[]
-  /** id of another recipe — a subrecipe reference */
-  ref?: string
+}
+
+/**
+ * §2.2 — another recipe used as an ingredient: `2 tart bases · Base à tarte`. Its name
+ * and unit are the child's own title and yield, read live, never copied here.
+ */
+export type SubrecipeNode = BaseNode & {
+  type: 'subrecipe'
+  /** id of the recipe used; empty until one is picked */
+  ref: string
+  /** how many of the child's yield (`servingsUnit`) this recipe needs, at baseline */
+  qty: number
 }
 
 export type ActionNode = BaseNode & {
@@ -65,7 +75,7 @@ export type WaitNode = BaseNode & {
   label: string
 }
 
-export type RecipeNode = IngredientNode | ActionNode | SplitNode | WaitNode
+export type RecipeNode = IngredientNode | SubrecipeNode | ActionNode | SplitNode | WaitNode
 
 export type Recipe = {
   version: number
@@ -93,6 +103,9 @@ export type Bundle = {
 }
 
 export const isIngredient = (n: RecipeNode): n is IngredientNode => n.type === 'ingredient'
+/** A source opens a row of its own and takes no inputs: an ingredient or a subrecipe. */
+export const isSource = (n: RecipeNode): n is IngredientNode | SubrecipeNode =>
+  n.type === 'ingredient' || n.type === 'subrecipe'
 export const isSplit = (n: RecipeNode): n is SplitNode => n.type === 'split'
 export const isWait = (n: RecipeNode): n is WaitNode => n.type === 'wait'
 

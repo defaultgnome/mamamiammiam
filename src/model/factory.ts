@@ -44,6 +44,8 @@ export function newNode(type: RecipeNode['type']): RecipeNode {
   switch (type) {
     case 'ingredient':
       return { id: nodeId('i'), type, inputs: [], options: [newOption()] }
+    case 'subrecipe':
+      return { id: nodeId('r'), type, inputs: [], ref: '', qty: 1 }
     case 'action':
       return { id: nodeId('a'), type, inputs: [], label: 'step' }
     case 'wait':

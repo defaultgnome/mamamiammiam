@@ -423,6 +423,23 @@ label.field > span {
   color: var(--ink-soft);
 }
 
+.used-in {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.used-in a.tag {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.used-in a.tag:hover {
+  background: var(--accent-soft);
+}
+
 .badge {
   display: inline-block;
   font-size: 10px;
@@ -512,7 +529,8 @@ table.diagram td {
     color 0.1s;
 }
 
-table.diagram td.k-ingredient {
+table.diagram td.k-ingredient,
+table.diagram td.k-subrecipe {
   background: var(--ingredient);
   border-color: var(--ingredient-line);
   font-weight: 500;
@@ -714,11 +732,13 @@ td.done .cell-sub {
   border-radius: 8px 8px 0 0;
 }
 
-.flow-node.k-ingredient {
+.flow-node.k-ingredient,
+.flow-node.k-subrecipe {
   border-color: var(--ingredient-line);
 }
 
-.flow-node.k-ingredient .nf-head {
+.flow-node.k-ingredient .nf-head,
+.flow-node.k-subrecipe .nf-head {
   background: var(--ingredient);
   border-bottom-color: var(--ingredient-line);
 }
@@ -904,6 +924,77 @@ td.done .cell-sub {
 /* Clear of the × that sits over the rule's right end. */
 .flow-node .nf-option .nf-or {
   margin-right: 22px;
+}
+
+/* §2.2 — the subrecipe search box and its results, dropping over the canvas. */
+.picker {
+  position: relative;
+}
+
+.picker-list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 3px);
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 3px;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  box-shadow: var(--shadow);
+}
+
+.picker-list li {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 6px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.picker-list li[aria-selected='true'] {
+  background: var(--accent-soft);
+}
+
+.picker-list .picker-sub,
+.picker-list .picker-empty {
+  font-size: 10px;
+  color: var(--ink-faint);
+}
+
+.flow-node .nf-open {
+  align-self: flex-start;
+  font-size: 11px;
+  font-family: var(--mono);
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* Sits where a field's caption span would, so it undoes the caption's styling. */
+.flow-node .nf-field > span.nf-suffixed {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: inherit;
+  text-transform: none;
+  letter-spacing: 0;
+  color: inherit;
+}
+
+.flow-node .nf-suffixed input {
+  width: 64px;
+  flex: none;
+}
+
+.flow-node .nf-suffixed > span {
+  font-size: 12px;
+  color: var(--ink-soft);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .flow-node .nf-portion {

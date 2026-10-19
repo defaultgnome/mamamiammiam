@@ -1,5 +1,5 @@
 import type { RecipeNode, Recipe, SplitNode } from '../model/types'
-import { nodeMap, consumers } from '../model/types'
+import { nodeMap, consumers, isSource } from '../model/types'
 import { layerColumns, columnCount } from './columns'
 import { downstreamWaits } from './time'
 import { makeLabeller } from './labels'
@@ -15,7 +15,7 @@ export type StreamRow = {
   label?: string
 }
 
-export type CellKind = 'ingredient' | 'action' | 'split' | 'wait' | 'marker'
+export type CellKind = 'ingredient' | 'subrecipe' | 'action' | 'split' | 'wait' | 'marker'
 
 export type Cell = {
   key: string
@@ -40,7 +40,14 @@ export type Cell = {
 }
 
 export type Warning = {
-  kind: 'cycle' | 'multiple-terminals' | 'orphan' | 'missing-qty' | 'empty-label' | 'detached'
+  kind:
+    | 'cycle'
+    | 'multiple-terminals'
+    | 'orphan'
+    | 'missing-qty'
+    | 'empty-label'
+    | 'no-subrecipe'
+    | 'detached'
   nodeIds: string[]
 }
 
@@ -113,7 +120,7 @@ export function solveLayout(recipe: Recipe): Layout {
       (nodeOrder.get(a.id) ?? 0) - (nodeOrder.get(b.id) ?? 0),
   )
   for (const n of nodes) {
-    if (n.type === 'ingredient') {
+    if (isSource(n)) {
       rows.push({ id: n.id, kind: 'ingredient', sourceNodeId: n.id })
     }
   }
@@ -146,7 +153,7 @@ export function solveLayout(recipe: Recipe): Layout {
     return idealRows.get(inputId) ?? []
   }
   for (const n of byColumnThenOrder) {
-    if (n.type === 'ingredient') {
+    if (isSource(n)) {
       idealRows.set(n.id, [n.id])
       continue
     }
@@ -270,7 +277,7 @@ export function solveLayout(recipe: Recipe): Layout {
   }
 
   for (const n of byColumnThenOrder) {
-    if (n.type === 'ingredient') {
+    if (isSource(n)) {
       effRows.set(n.id, [n.id])
       continue
     }
@@ -468,6 +475,9 @@ export function cellText(n: RecipeNode): string {
   switch (n.type) {
     case 'ingredient':
       return n.options.map((o) => o.name).join(' / ')
+    case 'subrecipe':
+      // The child's title is not known here; the diagram looks it up (§2.2).
+      return n.ref
     case 'action':
       return n.label
     case 'wait':
@@ -488,10 +498,7 @@ function collectWarnings(nodes: RecipeNode[], consumersOf: Map<string, string[]>
     out.push({ kind: 'multiple-terminals', nodeIds: terminals.map((n) => n.id) })
   }
   const orphans = nodes.filter(
-    (n) =>
-      n.inputs.length === 0 &&
-      n.type !== 'ingredient' &&
-      (consumersOf.get(n.id) ?? []).length === 0,
+    (n) => n.inputs.length === 0 && !isSource(n) && (consumersOf.get(n.id) ?? []).length === 0,
   )
   if (orphans.length) out.push({ kind: 'orphan', nodeIds: orphans.map((n) => n.id) })
 
@@ -500,7 +507,6 @@ function collectWarnings(nodes: RecipeNode[], consumersOf: Map<string, string[]>
   const missingQty = nodes.filter(
     (n) =>
       n.type === 'ingredient' &&
-      !n.ref &&
       n.options[0]?.qty === undefined &&
       n.options[0]?.altQty === undefined,
   )
@@ -509,9 +515,12 @@ function collectWarnings(nodes: RecipeNode[], consumersOf: Map<string, string[]>
   const emptyLabel = nodes.filter((n) =>
     n.type === 'ingredient'
       ? n.options.some((o) => o.name.trim() === '')
-      : cellText(n).trim() === '',
+      : n.type !== 'subrecipe' && cellText(n).trim() === '',
   )
   if (emptyLabel.length) out.push({ kind: 'empty-label', nodeIds: emptyLabel.map((n) => n.id) })
+
+  const unpicked = nodes.filter((n) => n.type === 'subrecipe' && !n.ref)
+  if (unpicked.length) out.push({ kind: 'no-subrecipe', nodeIds: unpicked.map((n) => n.id) })
 
   const cyclic = findCycleNodes(nodes)
   if (cyclic.length) out.push({ kind: 'cycle', nodeIds: cyclic })

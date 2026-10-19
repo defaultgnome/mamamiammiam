@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Lang, Recipe, RecipeNode } from '../model/types'
+import { isSource } from '../model/types'
 import { useApp } from '../store/app'
 import { navigate } from '../store/router'
 import { cloneNode, newMixNode, newNode, nodeId } from '../model/factory'
@@ -29,6 +30,10 @@ export function EditorPage({ id }: { id: string }) {
   )
 
   const layout = useMemo(() => solveLayout(draft), [draft])
+  const recipesById = useMemo(
+    () => new Map(library.filter((r) => r.id !== id).map((r) => [r.id, r])),
+    [library, id],
+  )
 
   const patchNode = useCallback(
     (nodeId: string, patch: Partial<RecipeNode>) =>
@@ -73,7 +78,7 @@ export function EditorPage({ id }: { id: string }) {
       const anchor = draftRef.current.nodes.find((n) => n.id === anchorId)
       if (!anchor) return null
       // Feeding an ingredient is meaningless — it is a source by definition (§2.2).
-      if (direction === 'upstream' && anchor.type === 'ingredient') return null
+      if (direction === 'upstream' && isSource(anchor)) return null
       const spawned = newMixNode()
       update((r) =>
         direction === 'downstream'
@@ -122,7 +127,7 @@ export function EditorPage({ id }: { id: string }) {
     update((r) => ({
       ...r,
       nodes: r.nodes.map((n) =>
-        n.id === to && n.type !== 'ingredient' && !n.inputs.includes(from)
+        n.id === to && !isSource(n) && !n.inputs.includes(from)
           ? { ...n, inputs: [...n.inputs, from] }
           : n,
       ),
@@ -199,7 +204,7 @@ export function EditorPage({ id }: { id: string }) {
         <div>
           <div className="row" style={{ marginBottom: 10 }}>
             <span className="hint">{t('editor.addNode')}</span>
-            {(['ingredient', 'action', 'wait', 'split'] as const).map((type) => (
+            {(['ingredient', 'subrecipe', 'action', 'wait', 'split'] as const).map((type) => (
               <button key={type} className="btn small" onClick={() => addNode(type)}>
                 + {t(`editor.add${type[0].toUpperCase()}${type.slice(1)}`)}
               </button>
@@ -255,6 +260,7 @@ export function EditorPage({ id }: { id: string }) {
               lang={lang}
               t={t}
               orientation="horizontal"
+              recipes={recipesById}
               edit={{
                 rowIds: layout.rows.map((r) => r.id),
                 selectedRows: branchRows,

@@ -38,8 +38,24 @@ describe('migrateRecipe', () => {
       type: 'ingredient',
       inputs: [],
       options: [{ name: 'butter', qty: 250, unit: 'g', altQty: 1, altUnit: 'cup' }],
-      ref: undefined,
     })
+  })
+
+  it('turns a v1 ingredient that referenced a recipe into a subrecipe node', () => {
+    const r = migrateRecipe(
+      v1([
+        {
+          id: 'i',
+          type: 'ingredient',
+          inputs: [],
+          name: 'base',
+          qty: 2,
+          unit: 'x',
+          ref: 'pate',
+        },
+      ]),
+    )
+    expect(r.nodes[0]).toEqual({ id: 'i', type: 'subrecipe', inputs: [], ref: 'pate', qty: 2 })
   })
 
   it('keeps v2 options as they are', () => {

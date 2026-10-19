@@ -29,8 +29,15 @@ export function App() {
         )}
         {route.name === 'list' && <ListPage route={route} />}
         {/* Keyed by id: the multiplier and done marks are per cooking session, so
-            moving to another recipe must start them fresh rather than inherit. */}
-        {route.name === 'recipe' && <RecipePage key={route.id} id={route.id} />}
+            moving to another recipe must start them fresh rather than inherit. The
+            servings a parent asked for are part of the key for the same reason. */}
+        {route.name === 'recipe' && (
+          <RecipePage
+            key={`${route.id}?${route.query.get('servings') ?? ''}`}
+            id={route.id}
+            initialServings={servingsParam(route.query)}
+          />
+        )}
         {route.name === 'settings' && <SettingsPage />}
         {route.name === 'editor' && (
           <Suspense fallback={<div className="empty">{t('app.loading')}</div>}>
@@ -41,4 +48,10 @@ export function App() {
       <UpdateToast />
     </>
   )
+}
+
+/** `?servings=2` — a positive number, or nothing. */
+function servingsParam(query: URLSearchParams): number | undefined {
+  const n = Number(query.get('servings'))
+  return Number.isFinite(n) && n > 0 ? n : undefined
 }
