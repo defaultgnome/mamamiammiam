@@ -7,6 +7,7 @@ import { LangThemeControls, TopBar } from '../ui/TopBar'
 import { useWakeLock } from '../ui/useWakeLock'
 import { isModifiedLocally } from '../store/storage'
 import { formatServings } from '../store/format'
+import { NumberField } from '../ui/NumberField'
 
 // The DOM-to-image library is only needed once you actually press Share.
 const ShareDialog = lazy(() =>
@@ -106,16 +107,11 @@ export function RecipePage({ id }: { id: string }) {
             </button>
           ))}
         </div>
-        <input
-          type="number"
+        <NumberField
           min={0.25}
-          step={0.25}
           value={effectiveServings}
           aria-label={t('recipe.servings')}
-          onChange={(e) => {
-            const v = Number(e.target.value)
-            setServings(Number.isFinite(v) && v > 0 ? v : null)
-          }}
+          onChange={setServings}
         />
         <span className="hint">
           {t('recipe.serves', { n: formatServings(effectiveServings, lang) })}

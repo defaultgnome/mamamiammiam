@@ -9,6 +9,7 @@ import { LangThemeControls, TopBar } from '../ui/TopBar'
 import { GraphCanvas, type Direction } from './GraphCanvas'
 import { useEditorDraft } from './useEditorDraft'
 import { downloadText, exportRecipe } from '../store/storage'
+import { NumberField } from '../ui/NumberField'
 
 export function EditorPage({ id }: { id: string }) {
   const { library, dispatch, t, lang } = useApp()
@@ -301,30 +302,18 @@ export function EditorPage({ id }: { id: string }) {
             <div className="row">
               <label className="field" style={{ flex: 1 }}>
                 <span>{t('editor.servingsBase')}</span>
-                <input
-                  type="number"
+                <NumberField
                   min={1}
                   value={draft.servings}
-                  onChange={(e) =>
-                    update((r) => ({
-                      ...r,
-                      servings: Math.max(1, Number(e.target.value) || 1),
-                    }))
-                  }
+                  onChange={(servings) => update((r) => ({ ...r, servings }))}
                 />
               </label>
               <label className="field" style={{ flex: 1 }}>
                 <span>{t('editor.prepMinutes')}</span>
-                <input
-                  type="number"
+                <NumberField
                   min={0}
                   value={draft.prepMinutes}
-                  onChange={(e) =>
-                    update((r) => ({
-                      ...r,
-                      prepMinutes: Math.max(0, Number(e.target.value) || 0),
-                    }))
-                  }
+                  onChange={(prepMinutes) => update((r) => ({ ...r, prepMinutes }))}
                 />
               </label>
             </div>

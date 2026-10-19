@@ -39,6 +39,7 @@ import { wouldCycle, type Warning } from '../solver/layout'
 import { layerColumns } from '../solver/columns'
 import { streamLabel } from '../solver/labels'
 import { useApp } from '../store/app'
+import { NumberField } from '../ui/NumberField'
 
 type Props = {
   recipe: Recipe
@@ -343,14 +344,11 @@ function WaitFields({ node, set, t }: FieldProps<WaitNode>) {
         />
       </Field>
       <Field label={t('editor.minutes')}>
-        <input
+        <NumberField
           className="nodrag"
-          type="number"
           min={0}
           value={node.minutes}
-          onChange={(e) =>
-            set({ minutes: Math.max(0, Number(e.target.value) || 0) } as Partial<RecipeNode>)
-          }
+          onChange={(minutes) => set({ minutes } as Partial<RecipeNode>)}
         />
       </Field>
     </>
@@ -368,14 +366,13 @@ function SplitFields({ node, set, t }: FieldProps<SplitNode>) {
       <span className="nf-hint">{t('editor.portions')}</span>
       {node.portions.map((p, i) => (
         <div className="nf-portion" key={i}>
-          <input
+          <NumberField
             className="nodrag nf-pct"
-            type="number"
             min={0}
             max={100}
             aria-label={t('editor.portions')}
             value={p.percent}
-            onChange={(e) => patchPortion(i, { percent: Number(e.target.value) || 0 })}
+            onChange={(percent) => patchPortion(i, { percent })}
           />
           {i === 0 ? (
             // Portion 0 continues on the row the split already sits on, so it never
