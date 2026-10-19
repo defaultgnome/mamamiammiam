@@ -1,4 +1,4 @@
-# gaditor
+# Mama Miam Miam
 
 Recipes drawn as **flow tables**: ingredients are rows, time is columns, merged cells
 show where streams join. A client-only web app — no server, no accounts.
@@ -10,12 +10,12 @@ graph. See [SPEC.md](SPEC.md) for the full v1 specification.
 
 ```sh
 npm install
-npm run dev      # http://localhost:5173/gaditor/
+npm run dev      # http://localhost:5173/mamamiammiam/
 npm test         # solver unit tests
 npm run build
 ```
 
-`base` in `vite.config.ts` is `/gaditor/` — it must match the repository name or every
+`base` in `vite.config.ts` is `/mamamiammiam/` — it must match the repository name or every
 asset 404s on GitHub Pages. Change it if you fork under a different name.
 
 ## How it fits together
@@ -39,7 +39,7 @@ The solver is three pure functions, unit-tested in `src/solver/solver.test.ts`:
 ## Publishing recipes
 
 Recipes live in `public/recipes.json`, fetched on every load. Local edits go to a
-localStorage overlay (`gaditor:v1:overlay`) and **local always wins** — a recipe you have
+localStorage overlay (`mamamiammiam:v1:overlay`) and **local always wins** — a recipe you have
 never touched tracks the published version, an edited one stays yours until reverted.
 
 To publish your local work: **Settings → Export merged bundle**, commit the downloaded

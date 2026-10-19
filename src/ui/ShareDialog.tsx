@@ -234,7 +234,7 @@ export function ShareDialog({ recipe, multiplier, servings, orientation, onClose
             t={t}
             orientation={shareOrientation}
           />
-          <div className="brandmark">gaditor</div>
+          <div className="brandmark">Mama Miam Miam</div>
         </div>
       </div>
     </div>

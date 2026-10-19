@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // GitHub Pages serves the app from /<repo>/ — every asset 404s without this.
 export default defineConfig({
-  base: '/gaditor/',
+  base: '/mamamiammiam/',
   plugins: [
     react(),
     VitePWA({
@@ -14,8 +14,8 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,json}'],
       },
       manifest: {
-        name: 'gaditor',
-        short_name: 'gaditor',
+        name: 'Mama Miam Miam',
+        short_name: 'Mama Miam Miam',
         description: 'Recipes as flow tables',
         start_url: '.',
         display: 'standalone',

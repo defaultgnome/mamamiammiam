@@ -2,8 +2,23 @@ import type { Bundle, Recipe, RecipeNode } from '../model/types'
 import { BUNDLE_VERSION, RECIPE_VERSION } from '../model/types'
 
 /** §7.2 — versioned key, so a format change never silently poisons an old overlay. */
-export const OVERLAY_KEY = 'gaditor:v1:overlay'
-export const PREFS_KEY = 'gaditor:v1:prefs'
+export const OVERLAY_KEY = 'mamamiammiam:v1:overlay'
+export const PREFS_KEY = 'mamamiammiam:v1:prefs'
+
+/** The app was called gaditor — carry its local data across once, so the rename loses nothing. */
+const LEGACY_KEYS: [string, string][] = [
+  ['gaditor:v1:overlay', OVERLAY_KEY],
+  ['gaditor:v1:prefs', PREFS_KEY],
+]
+try {
+  for (const [from, to] of LEGACY_KEYS) {
+    const old = localStorage.getItem(from)
+    if (old !== null && localStorage.getItem(to) === null) localStorage.setItem(to, old)
+    localStorage.removeItem(from)
+  }
+} catch {
+  // A blocked localStorage just means there is nothing to carry across.
+}
 
 export type Overlay = {
   version: number

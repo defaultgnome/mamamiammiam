@@ -41,7 +41,7 @@ export function TopBar({ back, children }: { back?: string; children?: ReactNode
             </g>
           </svg>
           <span className="brand-text">
-            gaditor
+            Mama Miam Miam
             <small>{t('app.tagline')}</small>
           </span>
         </button>

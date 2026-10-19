@@ -1,4 +1,4 @@
-# gaditor — Specification (v1)
+# Mama Miam Miam — Specification (v1)
 
 A client-only web app for writing, browsing and sharing recipes drawn as **flow tables**:
 ingredients are rows, time is columns, merged cells show where streams join.
@@ -338,7 +338,7 @@ breaking silently.
 
 ### 7.2 Overlay layer
 
-localStorage under a versioned key `gaditor:v1:overlay` holds **only local changes**:
+localStorage under a versioned key `mamamiammiam:v1:overlay` holds **only local changes**:
 created recipes, edited copies, and tombstones for deletions.
 
 **Local wins.** A recipe never touched locally always reflects the latest published
