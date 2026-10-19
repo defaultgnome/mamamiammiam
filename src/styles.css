@@ -25,6 +25,8 @@
   --done: #cfe3cd;
   --done-ink: #2c4a2a;
   --warn: #a2540b;
+  --danger: #b42318;
+  --danger-soft: #fbe6e3;
   --radius: 10px;
   --shadow: 0 1px 2px rgb(28 26 23 / 0.07), 0 6px 18px rgb(28 26 23 / 0.05);
   --mono:
@@ -57,6 +59,8 @@
   --done: #2c4a2a;
   --done-ink: #cfe3cd;
   --warn: #e0a35a;
+  --danger: #f2786b;
+  --danger-soft: #3b1a16;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 6px 18px rgb(0 0 0 / 0.3);
   color-scheme: dark;
 }
@@ -285,6 +289,16 @@ textarea:focus-visible,
   background: var(--accent-soft);
   border-color: var(--accent);
   color: var(--accent);
+}
+
+/* Throws work away — delete, revert. Red so it never reads as just another button. */
+.btn.danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.btn.danger:hover {
+  background: var(--danger-soft);
 }
 
 .btn.small {

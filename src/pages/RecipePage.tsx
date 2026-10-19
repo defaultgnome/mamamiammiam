@@ -160,7 +160,7 @@ export function RecipePage({ id }: { id: string }) {
       {modified && (
         <p style={{ marginTop: 20 }}>
           <button
-            className="btn small"
+            className="btn small danger"
             onClick={() => {
               if (confirm(t('recipe.confirmRevert')))
                 dispatch({ type: 'revert', id: recipe.id })

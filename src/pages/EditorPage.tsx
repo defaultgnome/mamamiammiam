@@ -212,7 +212,7 @@ export function EditorPage({ id }: { id: string }) {
               {t('settings.exportRecipe')}
             </button>
             <button
-              className="btn small"
+              className="btn small danger"
               onClick={() => {
                 if (confirm(t('app.confirmDelete'))) {
                   dispatch({ type: 'remove', id: draft.id })

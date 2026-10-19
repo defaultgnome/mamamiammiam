@@ -44,7 +44,7 @@ export function SettingsPage() {
             {t('settings.exportBundle')}
           </button>
           <button
-            className="btn"
+            className="btn danger"
             disabled={localCount === 0}
             onClick={() => {
               if (confirm(t('settings.confirmRevertAll'))) dispatch({ type: 'revertAll' })
