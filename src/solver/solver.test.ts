@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import type { Recipe, RecipeNode } from '../model/types'
 import { layerColumns } from './columns'
-import { criticalPath, downstreamWaits, formatDuration } from './time'
+import {
+  criticalPath,
+  downstreamWaits,
+  formatDuration,
+  formatSpan,
+  parseWaitRange,
+  waitSpan,
+} from './time'
 import { solveLayout, transpose, wouldCycle } from './layout'
 
 const ing = (id: string, name = id): RecipeNode => ({
@@ -24,6 +31,20 @@ const wait = (id: string, inputs: string[], minutes: number): RecipeNode => ({
   inputs,
   minutes,
   label: `rest ${minutes}`,
+})
+
+const ranged = (
+  id: string,
+  inputs: string[],
+  minutes: number,
+  maxMinutes: number,
+): RecipeNode => ({
+  id,
+  type: 'wait',
+  inputs,
+  minutes,
+  maxMinutes,
+  label: `rest ${minutes}-${maxMinutes}`,
 })
 
 const recipe = (nodes: RecipeNode[], rowOrder: string[] = []): Recipe => ({
@@ -156,6 +177,54 @@ describe('critical path', () => {
     expect(formatDuration(60)).toBe('1 h')
     expect(formatDuration(80)).toBe('1 h 20')
     expect(formatDuration(65)).toBe('1 h 05')
+  })
+
+  it('solves a ranged wait at both ends', () => {
+    const nodes = [ing('a'), ranged('w1', ['a'], 20, 30), wait('w2', ['w1'], 60)]
+    expect(waitSpan(nodes)).toEqual({ min: 80, max: 90 })
+  })
+
+  it('lets the short and long runs follow different paths', () => {
+    // a is surely 40; b is anywhere from 10 to 60 — it is the long path only at its max.
+    const nodes = [
+      ing('a'),
+      ing('b'),
+      wait('wa', ['a'], 40),
+      ranged('wb', ['b'], 10, 60),
+      act('m', ['wa', 'wb']),
+    ]
+    expect(waitSpan(nodes)).toEqual({ min: 40, max: 60 })
+  })
+
+  it('ranks a ranged wait by its long end', () => {
+    const nodes = [
+      ing('a'),
+      ing('b'),
+      wait('wa', ['a'], 40),
+      ranged('wb', ['b'], 10, 60),
+      act('m', ['wa', 'wb']),
+    ]
+    const d = downstreamWaits(nodes)
+    expect(d.get('b')!).toBe(60)
+    expect(d.get('a')!).toBe(40)
+  })
+
+  it('formats a span, collapsing one whose ends agree', () => {
+    expect(formatSpan({ min: 20, max: 20 })).toBe('20 min')
+    expect(formatSpan({ min: 20, max: 30 })).toBe('20–30 min')
+    expect(formatSpan({ min: 60, max: 90 })).toBe('1 h–1 h 30')
+    expect(formatSpan({ min: 50, max: 70 })).toBe('50 min–1 h 10')
+  })
+
+  it('parses a wait box', () => {
+    expect(parseWaitRange('20')).toEqual({ minutes: 20, maxMinutes: undefined })
+    expect(parseWaitRange(' 20 - 30 ')).toEqual({ minutes: 20, maxMinutes: 30 })
+    expect(parseWaitRange('20–30')).toEqual({ minutes: 20, maxMinutes: 30 })
+    expect(parseWaitRange('20-20')).toEqual({ minutes: 20, maxMinutes: undefined })
+    expect(parseWaitRange('30-20')).toBeNull()
+    expect(parseWaitRange('20-')).toBeNull()
+    expect(parseWaitRange('')).toBeNull()
+    expect(parseWaitRange('~20')).toBeNull()
   })
 })
 

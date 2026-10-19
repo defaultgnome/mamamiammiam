@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent 
 import type { Lang, Recipe, RecipeNode } from '../model/types'
 import { qtyText } from '../store/format'
 import { solveLayout, transpose, type Cell, type Layout } from '../solver/layout'
-import { formatDuration } from '../solver/time'
+import { formatSpan, nodeSpan } from '../solver/time'
 import type { Translate } from '../i18n'
 
 export type Orientation = 'horizontal' | 'vertical'
@@ -248,8 +248,8 @@ function CellView({
         {cell.text}
       </span>
 
-      {node?.type === 'wait' && node.minutes > 0 && (
-        <span className="cell-sub">{formatDuration(node.minutes)}</span>
+      {node?.type === 'wait' && (node.maxMinutes ?? node.minutes) > 0 && (
+        <span className="cell-sub">{formatSpan(nodeSpan(node))}</span>
       )}
 
       {node?.type === 'ingredient' &&

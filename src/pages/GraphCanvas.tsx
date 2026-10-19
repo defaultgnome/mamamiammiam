@@ -39,7 +39,8 @@ import { wouldCycle, type Warning } from '../solver/layout'
 import { layerColumns } from '../solver/columns'
 import { streamLabel } from '../solver/labels'
 import { useApp } from '../store/app'
-import { NumberField } from '../ui/NumberField'
+import { NumberField, useCommittedText } from '../ui/NumberField'
+import { formatWaitRange, parseWaitRange } from '../solver/time'
 
 type Props = {
   recipe: Recipe
@@ -344,14 +345,32 @@ function WaitFields({ node, set, t }: FieldProps<WaitNode>) {
         />
       </Field>
       <Field label={t('editor.minutes')}>
-        <NumberField
-          className="nodrag"
-          min={0}
-          value={node.minutes}
-          onChange={(minutes) => set({ minutes } as Partial<RecipeNode>)}
-        />
+        <WaitRangeField node={node} set={set} t={t} />
       </Field>
     </>
+  )
+}
+
+/** `20` or `20-30` — one box, so a range costs no more typing than a number (§2.2). */
+function WaitRangeField({ node, set, t }: FieldProps<WaitNode>) {
+  const range = { minutes: node.minutes, maxMinutes: node.maxMinutes }
+  const box = useCommittedText(
+    range,
+    formatWaitRange,
+    parseWaitRange,
+    (next) => set(next as Partial<RecipeNode>),
+    (a, b) => a.minutes === b.minutes && a.maxMinutes === b.maxMinutes,
+  )
+  return (
+    <input
+      className="nodrag"
+      type="text"
+      inputMode="text"
+      placeholder={t('editor.minutesHint')}
+      value={box.value}
+      onChange={box.onChange}
+      onBlur={box.onBlur}
+    />
   )
 }
 

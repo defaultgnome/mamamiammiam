@@ -93,6 +93,7 @@
   "editor.ref": "Subrecipe id",
   "editor.label": "Label",
   "editor.minutes": "Minutes",
+  "editor.minutesHint": "20 or 20-30",
   "editor.portions": "Portions %",
   "editor.addPortion": "Add portion",
   "editor.portionStays": "stays on this row",

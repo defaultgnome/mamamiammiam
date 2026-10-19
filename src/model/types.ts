@@ -49,7 +49,10 @@ export type SplitNode = BaseNode & {
 
 export type WaitNode = BaseNode & {
   type: 'wait'
+  /** the exact wait, or the short end of a range */
   minutes: number
+  /** set ⇒ the wait is a range, `minutes`–`maxMinutes`; always greater than `minutes` */
+  maxMinutes?: number
   label: string
 }
 

@@ -93,6 +93,7 @@
   "editor.ref": "Id de sous-recette",
   "editor.label": "Libellé",
   "editor.minutes": "Minutes",
+  "editor.minutesHint": "20 ou 20-30",
   "editor.portions": "Portions %",
   "editor.addPortion": "Ajouter une portion",
   "editor.portionStays": "reste sur cette ligne",

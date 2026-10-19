@@ -112,7 +112,7 @@ appearance and validation only — the renderer and solver treat nodes uniformly
 | `ingredient` | `name`, `qty?`, `unit?`, `altQty?`, `altUnit?`, `ref?` | Source: `inputs` is always empty. `unit` is free text, not an enum. `ref` is another recipe's id. |
 | `action`     | `label`                                                | Free text. N inputs → 1 output.                                                                   |
 | `split`      | `portions: { percent, label }[]`                       | 1 input → N outputs.                                                                              |
-| `wait`       | `minutes`, `label`                                     | 1 input → 1 output.                                                                               |
+| `wait`       | `minutes`, `maxMinutes?`, `label`                      | 1 input → 1 output. `maxMinutes` set ⇒ a range, always > `minutes`.                               |
 
 **There is no merge node.** Any node with two or more inputs _is_ a merge, rendered as a
 cell spanning those rows.
@@ -136,7 +136,9 @@ new row, auto-labelled `A`, `B`, `C`, … A single split node may emit several p
 Percentages are scale-invariant — the multiplier does not touch them.
 
 **`wait`**: an explicitly timed wait, feeding both the time calculation (§3.3) and the
-default row order (§3.2). Untimed waiting ("rest until cool") is just an `action`.
+default row order (§3.2). Untimed waiting ("rest until cool") is just an `action`. A wait
+is either exact (`20`) or a range (`20-30`), typed into one box; it renders `20–30 min`.
+There is no "approximately" marker — a range says it better.
 
 ---
 
@@ -154,7 +156,8 @@ This guarantees a step never precedes its inputs. Column position is not authora
 Rows are streams: ingredient sources, plus rows spawned by splits.
 
 **Default order**: descending **downstream wait total** — for each source, the sum of
-`wait.minutes` on the path from it to the final node. The stream with the most waiting
+`wait.minutes` on the path from it to the final node (a ranged wait counts at its long
+end). The stream with the most waiting
 ahead of it floats to the top, because that is the one you must start first. Ranking by a
 stream's own waits alone would miss a stream that waits little itself but feeds a long
 rest later.
@@ -167,7 +170,7 @@ author's order under them reads as the drag having failed.
 **Contiguity constraint**: a node with N inputs must span **adjacent** rows. While no
 order has been authored the solver satisfies this itself: build the merge tree, order
 children by the mean position of their subtree, emit rows depth-first. Under an authored
-order it instead *reports* the breakage, as a `detached` warning naming the steps that
+order it instead _reports_ the breakage, as a `detached` warning naming the steps that
 had to fall back to a reference marker. The editor refuses a drag that would raise that
 count, and shakes the table (§6.2) — so the constraint is enforced at the one place an
 author can act on it, rather than by silently rewriting their work.
@@ -187,6 +190,11 @@ a merge**. Two streams each resting 1h in parallel cost 1h, not 2h.
 
 Displayed as a breakdown — `prep 20 min + wait 1 h = 1 h 20` — so it is obvious which half
 is the author's estimate and which is derived.
+
+With ranged waits the critical path is solved twice, once on the short ends and once on
+the long ones, and both the wait and the total read as ranges:
+`prep 20 min + wait 1 h–1 h 30 = 1 h 20–1 h 50`. The two runs may follow different paths;
+each is right on its own.
 
 Wait durations do **not** scale with the multiplier. Neither does `prepMinutes`.
 

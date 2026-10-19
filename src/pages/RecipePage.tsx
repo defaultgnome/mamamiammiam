@@ -1,7 +1,7 @@
 import { lazy, Suspense, useMemo, useState } from 'react'
 import { useApp } from '../store/app'
 import { navigate } from '../store/router'
-import { criticalPath, formatDuration } from '../solver/time'
+import { formatDuration, formatSpan, waitSpan } from '../solver/time'
 import { Diagram, type Orientation } from '../ui/Diagram'
 import { LangThemeControls, TopBar } from '../ui/TopBar'
 import { useWakeLock } from '../ui/useWakeLock'
@@ -50,8 +50,8 @@ export function RecipePage({ id }: { id: string }) {
 
   const effectiveServings = servings ?? recipe.servings
   const multiplier = recipe.servings > 0 ? effectiveServings / recipe.servings : 1
-  const wait = criticalPath(recipe.nodes)
-  const total = recipe.prepMinutes + wait
+  const wait = waitSpan(recipe.nodes)
+  const total = { min: recipe.prepMinutes + wait.min, max: recipe.prepMinutes + wait.max }
   const modified = isModifiedLocally(recipe.id, state.overlay)
 
   const toggleDone = (nodeId: string) =>
@@ -79,7 +79,7 @@ export function RecipePage({ id }: { id: string }) {
         <div className="time">
           {t('recipe.prep', { prep: formatDuration(recipe.prepMinutes) })}
           {' + '}
-          {t('recipe.wait', { wait: formatDuration(wait) })} = <b>{formatDuration(total)}</b>
+          {t('recipe.wait', { wait: formatSpan(wait) })} = <b>{formatSpan(total)}</b>
         </div>
         <div className="tags">
           <span className="badge lang">{recipe.lang.toUpperCase()}</span>

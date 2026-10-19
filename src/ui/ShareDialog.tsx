@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { toBlob } from 'html-to-image'
 import type { Recipe } from '../model/types'
 import { useApp } from '../store/app'
-import { criticalPath, formatDuration } from '../solver/time'
+import { formatDuration, formatSpan, waitSpan } from '../solver/time'
 import { Diagram, type Orientation } from './Diagram'
 import { servesText } from '../store/format'
 import { rasterScale } from './rasterScale'
@@ -129,7 +129,7 @@ export function ShareDialog({ recipe, multiplier, servings, orientation, onClose
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  const wait = criticalPath(recipe.nodes)
+  const wait = waitSpan(recipe.nodes)
 
   return (
     <div className="backdrop" onClick={onClose}>
@@ -220,8 +220,13 @@ export function ShareDialog({ recipe, multiplier, servings, orientation, onClose
             <div className="time">
               {t('recipe.prep', { prep: formatDuration(recipe.prepMinutes) })}
               {' + '}
-              {t('recipe.wait', { wait: formatDuration(wait) })} ={' '}
-              <b>{formatDuration(recipe.prepMinutes + wait)}</b>
+              {t('recipe.wait', { wait: formatSpan(wait) })} ={' '}
+              <b>
+                {formatSpan({
+                  min: recipe.prepMinutes + wait.min,
+                  max: recipe.prepMinutes + wait.max,
+                })}
+              </b>
               {' · '}
               {servesText(t, servings, recipe.servingsUnit, lang)}
             </div>

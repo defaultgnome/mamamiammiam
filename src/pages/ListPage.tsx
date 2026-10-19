@@ -2,7 +2,7 @@ import { useMemo, type ReactNode } from 'react'
 import { buildIndex, markKey, searchLibrary, type SearchHit } from '../model/search'
 import { useApp } from '../store/app'
 import { navigate, useQueryParam, type Route } from '../store/router'
-import { criticalPath, formatDuration } from '../solver/time'
+import { formatSpan, waitSpan } from '../solver/time'
 import { isModifiedLocally, uniqueId } from '../store/storage'
 import { servesText } from '../store/format'
 import { LangThemeControls, TopBar } from '../ui/TopBar'
@@ -82,8 +82,8 @@ export function ListPage({ route }: { route: Route }) {
 function RecipeCard({ hit }: { hit: SearchHit }) {
   const { t, state, lang } = useApp()
   const { recipe, marks } = hit
-  const wait = criticalPath(recipe.nodes)
-  const total = recipe.prepMinutes + wait
+  const wait = waitSpan(recipe.nodes)
+  const total = { min: recipe.prepMinutes + wait.min, max: recipe.prepMinutes + wait.max }
   const modified = isModifiedLocally(recipe.id, state.overlay)
 
   // The ingredient list is not on the card, so a match there is invisible unless the
@@ -99,7 +99,7 @@ function RecipeCard({ hit }: { hit: SearchHit }) {
         <Highlight text={recipe.title} marks={marks.get(markKey('title', recipe.title))} />
       </h3>
       <div className="meta">
-        {formatDuration(total)} · {servesText(t, recipe.servings, recipe.servingsUnit, lang)}
+        {formatSpan(total)} · {servesText(t, recipe.servings, recipe.servingsUnit, lang)}
       </div>
       {matchedIngredients.length > 0 && (
         <div className="matched">

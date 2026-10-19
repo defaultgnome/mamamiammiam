@@ -99,8 +99,16 @@ function migrateNode(n: RecipeNode): RecipeNode {
         altUnit: base.altUnit || undefined,
         ref: base.ref || undefined,
       }
-    case 'wait':
-      return { ...base, minutes: Number(base.minutes) || 0, label: base.label ?? '' }
+    case 'wait': {
+      const minutes = Number(base.minutes) || 0
+      const max = numberOrUndefined(base.maxMinutes)
+      return {
+        ...base,
+        minutes,
+        maxMinutes: max !== undefined && max > minutes ? max : undefined,
+        label: base.label ?? '',
+      }
+    }
     case 'split':
       return {
         ...base,

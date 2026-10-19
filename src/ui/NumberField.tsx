@@ -20,12 +20,14 @@ export function useCommittedText<T>(
   const [text, setText] = useState(() => format(value))
 
   // Adopt a change from elsewhere (undo, another recipe) — but not one this box made
-  // itself, or every keystroke would rewrite the text and move the caret.
+  // itself, or every keystroke would rewrite the text and move the caret. Keyed on the
+  // formatted value, so a value rebuilt as a fresh object each render is not a change.
+  const key = format(value)
   useEffect(() => {
     const mine = parse(text)
-    if (mine === null || !same(mine, value)) setText(format(value))
+    if (mine === null || !same(mine, value)) setText(key)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `text` is the thing being reconciled
-  }, [value])
+  }, [key])
 
   return {
     value: text,
