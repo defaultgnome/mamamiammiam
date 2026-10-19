@@ -29,6 +29,7 @@ import '@xyflow/react/dist/style.css'
 import type {
   ActionNode,
   IngredientNode,
+  IngredientOption,
   Recipe,
   RecipeNode,
   SplitNode,
@@ -149,7 +150,7 @@ function NodeWarning({ id }: { id: string }) {
 function estimateHeight(n: RecipeNode): number {
   switch (n.type) {
     case 'ingredient':
-      return 232
+      return 72 + n.options.length * 200
     case 'action':
       return 96
     case 'wait':
@@ -249,14 +250,66 @@ type FieldProps<T extends RecipeNode> = {
 }
 
 function IngredientFields({ node, set, t }: FieldProps<IngredientNode>) {
+  const setOptions = (options: IngredientOption[]) => set({ options } as Partial<RecipeNode>)
+  const patchOption = (i: number, patch: Partial<IngredientOption>) =>
+    setOptions(node.options.map((o, j) => (j === i ? { ...o, ...patch } : o)))
+
+  return (
+    <>
+      {node.options.map((option, i) => (
+        <div className="nf-option" key={i}>
+          {i > 0 && <span className="nf-or">{t('recipe.or')}</span>}
+          {/* Any block can go, the first included — but a node always keeps one. */}
+          {node.options.length > 1 && (
+            <button
+              className="btn small ghost nodrag nf-option-x"
+              aria-label={t('editor.removeOption')}
+              title={t('editor.removeOption')}
+              onClick={() => setOptions(node.options.filter((_, j) => j !== i))}
+            >
+              ×
+            </button>
+          )}
+          <OptionFields option={option} patch={(patch) => patchOption(i, patch)} t={t} />
+        </div>
+      ))}
+      <button
+        className="btn small nodrag"
+        style={{ marginTop: 6 }}
+        title={t('editor.addOptionHint')}
+        onClick={() => setOptions([...node.options, { name: '' }])}
+      >
+        {t('editor.addOption')}
+      </button>
+      <Field label={t('editor.ref')}>
+        <input
+          className="nodrag"
+          type="text"
+          value={node.ref ?? ''}
+          onChange={(e) => set({ ref: e.target.value || undefined } as Partial<RecipeNode>)}
+        />
+      </Field>
+    </>
+  )
+}
+
+function OptionFields({
+  option,
+  patch,
+  t,
+}: {
+  option: IngredientOption
+  patch: (patch: Partial<IngredientOption>) => void
+  t: Translate
+}) {
   return (
     <>
       <Field label={t('editor.name')}>
         <input
           className="nodrag"
           type="text"
-          value={node.name}
-          onChange={(e) => set({ name: e.target.value } as Partial<RecipeNode>)}
+          value={option.name}
+          onChange={(e) => patch({ name: e.target.value })}
         />
       </Field>
       <div className="nf-row">
@@ -265,11 +318,9 @@ function IngredientFields({ node, set, t }: FieldProps<IngredientNode>) {
             className="nodrag"
             type="number"
             step="any"
-            value={node.qty ?? ''}
+            value={option.qty ?? ''}
             onChange={(e) =>
-              set({
-                qty: e.target.value === '' ? undefined : Number(e.target.value),
-              } as Partial<RecipeNode>)
+              patch({ qty: e.target.value === '' ? undefined : Number(e.target.value) })
             }
           />
         </Field>
@@ -277,8 +328,8 @@ function IngredientFields({ node, set, t }: FieldProps<IngredientNode>) {
           <input
             className="nodrag"
             type="text"
-            value={node.unit ?? ''}
-            onChange={(e) => set({ unit: e.target.value } as Partial<RecipeNode>)}
+            value={option.unit ?? ''}
+            onChange={(e) => patch({ unit: e.target.value })}
           />
         </Field>
       </div>
@@ -289,11 +340,9 @@ function IngredientFields({ node, set, t }: FieldProps<IngredientNode>) {
             className="nodrag"
             type="number"
             step="any"
-            value={node.altQty ?? ''}
+            value={option.altQty ?? ''}
             onChange={(e) =>
-              set({
-                altQty: e.target.value === '' ? undefined : Number(e.target.value),
-              } as Partial<RecipeNode>)
+              patch({ altQty: e.target.value === '' ? undefined : Number(e.target.value) })
             }
           />
         </Field>
@@ -301,21 +350,11 @@ function IngredientFields({ node, set, t }: FieldProps<IngredientNode>) {
           <input
             className="nodrag"
             type="text"
-            value={node.altUnit ?? ''}
-            onChange={(e) =>
-              set({ altUnit: e.target.value || undefined } as Partial<RecipeNode>)
-            }
+            value={option.altUnit ?? ''}
+            onChange={(e) => patch({ altUnit: e.target.value || undefined })}
           />
         </Field>
       </div>
-      <Field label={t('editor.ref')}>
-        <input
-          className="nodrag"
-          type="text"
-          value={node.ref ?? ''}
-          onChange={(e) => set({ ref: e.target.value || undefined } as Partial<RecipeNode>)}
-        />
-      </Field>
     </>
   )
 }

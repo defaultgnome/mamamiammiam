@@ -1,4 +1,4 @@
-import type { IngredientNode, Lang } from '../model/types'
+import type { IngredientOption, Lang } from '../model/types'
 import { localeOf, type Translate } from '../i18n'
 
 /**
@@ -15,7 +15,7 @@ export function formatQty(value: number, lang: Lang): string {
 }
 
 /** Empty qty/unit ⇒ the ingredient does not scale (§2.2) — `1 pinch salt`, `oil for frying`. */
-export function scaledQty(node: IngredientNode, multiplier: number): number | undefined {
+export function scaledQty(node: IngredientOption, multiplier: number): number | undefined {
   if (node.qty === undefined) return undefined
   return node.qty * multiplier
 }
@@ -38,7 +38,7 @@ function measure(
  * when a second unit is given. Both halves take the same multiplier, so a doubled
  * recipe reads `2 packets / 20 g` and neither half drifts from the other.
  */
-export function qtyText(node: IngredientNode, multiplier: number, lang: Lang): string {
+export function qtyText(node: IngredientOption, multiplier: number, lang: Lang): string {
   return [
     measure(node.qty, node.unit, multiplier, lang),
     measure(node.altQty, node.altUnit, multiplier, lang),
@@ -47,7 +47,11 @@ export function qtyText(node: IngredientNode, multiplier: number, lang: Lang): s
     .join(' / ')
 }
 
-export function ingredientLabel(node: IngredientNode, multiplier: number, lang: Lang): string {
+export function ingredientLabel(
+  node: IngredientOption,
+  multiplier: number,
+  lang: Lang,
+): string {
   const qty = qtyText(node, multiplier, lang)
   return qty ? `${qty} ${node.name}` : node.name
 }

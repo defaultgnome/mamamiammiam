@@ -47,6 +47,7 @@
   "recipe.confirmRevert": "Discard local changes and go back to the published version?",
   "recipe.note": "Note",
   "recipe.reset": "Reset",
+  "recipe.or": "or",
 
   "share.title": "Share image",
   "share.theme": "Theme",
@@ -90,6 +91,9 @@
   "editor.unit": "Unit",
   "editor.altQty": "Alt qty",
   "editor.altUnit": "Alt unit",
+  "editor.removeOption": "Remove this ingredient",
+  "editor.addOptionHint": "Add an alternative ingredient",
+  "editor.addOption": "+ alt",
   "editor.ref": "Subrecipe id",
   "editor.label": "Label",
   "editor.minutes": "Minutes",

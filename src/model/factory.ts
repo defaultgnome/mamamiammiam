@@ -1,4 +1,4 @@
-import type { ActionNode, Lang, Recipe, RecipeNode } from './types'
+import type { ActionNode, IngredientOption, Lang, Recipe, RecipeNode } from './types'
 import { RECIPE_VERSION } from './types'
 
 let counter = 0
@@ -22,8 +22,18 @@ export function newRecipe(id: string, lang: Lang): Recipe {
     note: '',
     tags: [],
     nodes: [
-      { id: a, type: 'ingredient', inputs: [], name: 'ingredient one', qty: 1, unit: 'cup' },
-      { id: b, type: 'ingredient', inputs: [], name: 'ingredient two', qty: 2, unit: 'Tbs' },
+      {
+        id: a,
+        type: 'ingredient',
+        inputs: [],
+        options: [{ name: 'ingredient one', qty: 1, unit: 'cup' }],
+      },
+      {
+        id: b,
+        type: 'ingredient',
+        inputs: [],
+        options: [{ name: 'ingredient two', qty: 2, unit: 'Tbs' }],
+      },
       { id: m, type: 'action', inputs: [a, b], label: 'combine' },
     ],
     rowOrder: [],
@@ -33,7 +43,7 @@ export function newRecipe(id: string, lang: Lang): Recipe {
 export function newNode(type: RecipeNode['type']): RecipeNode {
   switch (type) {
     case 'ingredient':
-      return { id: nodeId('i'), type, inputs: [], name: 'ingredient', qty: 1, unit: '' }
+      return { id: nodeId('i'), type, inputs: [], options: [newOption()] }
     case 'action':
       return { id: nodeId('a'), type, inputs: [], label: 'step' }
     case 'wait':
@@ -49,6 +59,10 @@ export function newNode(type: RecipeNode['type']): RecipeNode {
         ],
       }
   }
+}
+
+export function newOption(): IngredientOption {
+  return { name: 'ingredient', qty: 1, unit: '' }
 }
 
 /**
@@ -67,7 +81,8 @@ export function newMixNode(): ActionNode {
  */
 export function cloneNode(node: RecipeNode, id: string): RecipeNode {
   const copy = { ...node, id, inputs: [...node.inputs] }
-  return copy.type === 'split'
-    ? { ...copy, portions: copy.portions.map((p) => ({ ...p })) }
-    : copy
+  if (copy.type === 'split') return { ...copy, portions: copy.portions.map((p) => ({ ...p })) }
+  if (copy.type === 'ingredient')
+    return { ...copy, options: copy.options.map((o) => ({ ...o })) }
+  return copy
 }

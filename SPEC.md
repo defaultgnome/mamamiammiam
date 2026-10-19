@@ -107,12 +107,12 @@ quantity of it (§2.2).
 All nodes share `{ id, type, inputs: string[] }`. `inputs` holds node ids. Type changes
 appearance and validation only — the renderer and solver treat nodes uniformly.
 
-| type         | params                                                 | rules                                                                                             |
-| ------------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| `ingredient` | `name`, `qty?`, `unit?`, `altQty?`, `altUnit?`, `ref?` | Source: `inputs` is always empty. `unit` is free text, not an enum. `ref` is another recipe's id. |
-| `action`     | `label`                                                | Free text. N inputs → 1 output.                                                                   |
-| `split`      | `portions: { percent, label }[]`                       | 1 input → N outputs.                                                                              |
-| `wait`       | `minutes`, `maxMinutes?`, `label`                      | 1 input → 1 output. `maxMinutes` set ⇒ a range, always > `minutes`.                               |
+| type         | params                                                        | rules                                                                                             |
+| ------------ | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `ingredient` | `options: { name, qty?, unit?, altQty?, altUnit? }[]`, `ref?` | Source: `inputs` is always empty. `unit` is free text, not an enum. `ref` is another recipe's id. |
+| `action`     | `label`                                                       | Free text. N inputs → 1 output.                                                                   |
+| `split`      | `portions: { percent, label }[]`                              | 1 input → N outputs.                                                                              |
+| `wait`       | `minutes`, `maxMinutes?`, `label`                             | 1 input → 1 output. `maxMinutes` set ⇒ a range, always > `minutes`.                               |
 
 **There is no merge node.** Any node with two or more inputs _is_ a merge, rendered as a
 cell spanning those rows.
@@ -121,6 +121,15 @@ cell spanning those rows.
 button that navigates to the referenced recipe. v1 does **not** inline the child graph and
 does **not** propagate the multiplier across the boundary. A recipe may not reference
 itself. A reference to a missing recipe renders as a visible "missing recipe" marker.
+
+**`ingredient.options`** are the ingredient and its alternatives — `250 g butter`, or
+`250 g margarine` — any of which fills the same slot. There is always at least one; the
+first is the one the recipe is written around, and the missing-quantity warning looks at
+it alone. Each option has the full set of fields below. The editor adds one with `+ alt`
+and removes any (the first included) as long as one remains. The diagram stacks them in
+the one cell, divided by a thin `or` rule; every option scales by the same multiplier,
+and search matches every option's name. Format v1 kept a single ingredient's fields on
+the node; it is migrated into a one-option list on load.
 
 **`ingredient.qty` / `unit` empty ⇒ the ingredient does not scale.** There is no explicit
 toggle. This is what makes `1 pinch salt` and `oil for frying` behave.
@@ -276,7 +285,7 @@ rendered PNG so it can be long-pressed and saved.
 
 ### 6.1 List page
 
-- Search box over **title + tags + ingredient names**, via **fuzzysort**.
+- Search box over **title + tags + ingredient names** (alternatives included), via **fuzzysort**.
 - Space-separated terms are **ANDed**: fuzzysort matches a query as a subsequence, so
   terms are split and per-term result sets intersected. Typing `chicken lemon` finds
   recipes containing both — the "what's in my fridge" query, with no extra UI.

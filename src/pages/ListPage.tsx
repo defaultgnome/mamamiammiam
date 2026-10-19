@@ -89,8 +89,8 @@ function RecipeCard({ hit }: { hit: SearchHit }) {
   // The ingredient list is not on the card, so a match there is invisible unless the
   // matched ingredients are pulled up. This is the whole "why am I seeing this" answer.
   const matchedIngredients = recipe.nodes
-    .filter((n) => n.type === 'ingredient' && marks.has(markKey('ingredient', n.name)))
-    .map((n) => (n.type === 'ingredient' ? n.name : ''))
+    .flatMap((n) => (n.type === 'ingredient' ? n.options.map((o) => o.name) : []))
+    .filter((name) => marks.has(markKey('ingredient', name)))
     .filter((name, i, all) => all.indexOf(name) === i)
 
   return (

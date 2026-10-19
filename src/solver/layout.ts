@@ -467,7 +467,7 @@ export function solveLayout(recipe: Recipe): Layout {
 export function cellText(n: RecipeNode): string {
   switch (n.type) {
     case 'ingredient':
-      return n.name
+      return n.options.map((o) => o.name).join(' / ')
     case 'action':
       return n.label
     case 'wait':
@@ -495,12 +495,22 @@ function collectWarnings(nodes: RecipeNode[], consumersOf: Map<string, string[]>
   )
   if (orphans.length) out.push({ kind: 'orphan', nodeIds: orphans.map((n) => n.id) })
 
+  // The first option is the one the recipe is written around; an alternative left
+  // unmeasured means "the same amount".
   const missingQty = nodes.filter(
-    (n) => n.type === 'ingredient' && !n.ref && n.qty === undefined && n.altQty === undefined,
+    (n) =>
+      n.type === 'ingredient' &&
+      !n.ref &&
+      n.options[0]?.qty === undefined &&
+      n.options[0]?.altQty === undefined,
   )
   if (missingQty.length) out.push({ kind: 'missing-qty', nodeIds: missingQty.map((n) => n.id) })
 
-  const emptyLabel = nodes.filter((n) => cellText(n).trim() === '')
+  const emptyLabel = nodes.filter((n) =>
+    n.type === 'ingredient'
+      ? n.options.some((o) => o.name.trim() === '')
+      : cellText(n).trim() === '',
+  )
   if (emptyLabel.length) out.push({ kind: 'empty-label', nodeIds: emptyLabel.map((n) => n.id) })
 
   const cyclic = findCycleNodes(nodes)

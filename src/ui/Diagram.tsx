@@ -241,12 +241,22 @@ function CellView({
           : undefined
       }
     >
-      <span className="cell-main">
-        {node?.type === 'ingredient' && qtyText(node, multiplier, lang) && (
-          <span className="cell-qty">{qtyText(node, multiplier, lang)}</span>
-        )}
-        {cell.text}
-      </span>
+      {node?.type === 'ingredient' ? (
+        // §2.2 — alternatives share the one cell: any of them fills the same slot.
+        node.options.map((option, i) => (
+          <span className="cell-option" key={i}>
+            {i > 0 && <span className="cell-or">{t('recipe.or')}</span>}
+            <span className="cell-main">
+              {qtyText(option, multiplier, lang) && (
+                <span className="cell-qty">{qtyText(option, multiplier, lang)}</span>
+              )}
+              {option.name}
+            </span>
+          </span>
+        ))
+      ) : (
+        <span className="cell-main">{cell.text}</span>
+      )}
 
       {node?.type === 'wait' && (node.maxMinutes ?? node.minutes) > 0 && (
         <span className="cell-sub">{formatSpan(nodeSpan(node))}</span>

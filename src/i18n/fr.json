@@ -47,6 +47,7 @@
   "recipe.confirmRevert": "Abandonner les modifications locales ?",
   "recipe.note": "Note",
   "recipe.reset": "Réinitialiser",
+  "recipe.or": "ou",
 
   "share.title": "Image à partager",
   "share.theme": "Thème",
@@ -90,6 +91,9 @@
   "editor.unit": "Unité",
   "editor.altQty": "Qté alt",
   "editor.altUnit": "Unité alt",
+  "editor.removeOption": "Retirer cet ingrédient",
+  "editor.addOptionHint": "Ajouter un ingrédient de remplacement",
+  "editor.addOption": "+ alt",
   "editor.ref": "Id de sous-recette",
   "editor.label": "Libellé",
   "editor.minutes": "Minutes",

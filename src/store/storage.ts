@@ -1,4 +1,4 @@
-import type { Bundle, Recipe, RecipeNode } from '../model/types'
+import type { Bundle, IngredientOption, Recipe, RecipeNode } from '../model/types'
 import { BUNDLE_VERSION, RECIPE_VERSION } from '../model/types'
 
 /** §7.2 — versioned key, so a format change never silently poisons an old overlay. */
@@ -85,20 +85,31 @@ function numberOrUndefined(value: unknown): number | undefined {
   return value === undefined || value === null || value === '' ? undefined : Number(value)
 }
 
+function migrateOption(o: Partial<IngredientOption>): IngredientOption {
+  return {
+    name: o.name ?? '',
+    qty: numberOrUndefined(o.qty),
+    unit: o.unit || undefined,
+    altQty: numberOrUndefined(o.altQty),
+    altUnit: o.altUnit || undefined,
+  }
+}
+
 function migrateNode(n: RecipeNode): RecipeNode {
   const base = { ...n, inputs: n.inputs ?? [] }
   switch (base.type) {
-    case 'ingredient':
+    case 'ingredient': {
+      // v1 kept a single ingredient's fields on the node itself.
+      const legacy = base as typeof base & Partial<IngredientOption>
+      const raw = base.options?.length ? base.options : [legacy]
       return {
-        ...base,
+        id: base.id,
+        type: 'ingredient',
         inputs: [],
-        name: base.name ?? '',
-        qty: numberOrUndefined(base.qty),
-        unit: base.unit || undefined,
-        altQty: numberOrUndefined(base.altQty),
-        altUnit: base.altUnit || undefined,
+        options: raw.map(migrateOption),
         ref: base.ref || undefined,
       }
+    }
     case 'wait': {
       const minutes = Number(base.minutes) || 0
       const max = numberOrUndefined(base.maxMinutes)

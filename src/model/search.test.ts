@@ -14,9 +14,7 @@ const recipe = (id: string, title: string, tags: string[], ingredients: string[]
     id: `${id}-i${i}`,
     type: 'ingredient' as const,
     inputs: [],
-    name,
-    qty: 1,
-    unit: 'g',
+    options: [{ name, qty: 1, unit: 'g' }],
   })),
   rowOrder: [],
 })
@@ -67,5 +65,22 @@ describe('searchLibrary', () => {
     const hit = hitFor('spinach', 'spinach')
     expect(hit?.marks.has(markKey('ingredient', 'spinach'))).toBe(true)
     expect(hit?.marks.has(markKey('tag', 'side'))).toBe(false)
+  })
+
+  it('finds a recipe by an alternative ingredient', () => {
+    const tart: Recipe = {
+      ...recipe('tart', 'Tart', [], []),
+      nodes: [
+        {
+          id: 'fat',
+          type: 'ingredient',
+          inputs: [],
+          options: [{ name: 'butter', qty: 250, unit: 'g' }, { name: 'margarine' }],
+        },
+      ],
+    }
+    const found = searchLibrary(buildIndex([tart]), 'margarine')
+    expect(found.map((h) => h.recipe.id)).toEqual(['tart'])
+    expect(found[0].marks.has(markKey('ingredient', 'margarine'))).toBe(true)
   })
 })

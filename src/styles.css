@@ -578,6 +578,36 @@ td.done .cell-qty {
   font-size: inherit;
 }
 
+.cell-option {
+  display: block;
+}
+
+/* §2.2 — the rule between an ingredient and its alternative: `butter ── or ── margarine`. */
+.cell-or,
+.flow-node .nf-or {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 3px 0;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ink-faint);
+}
+
+.cell-or::before,
+.cell-or::after,
+.flow-node .nf-or::before,
+.flow-node .nf-or::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--ingredient-line);
+}
+
+td.done .cell-or {
+  color: inherit;
+}
+
 .cell-sub {
   display: block;
   font-family: var(--mono);
@@ -855,6 +885,25 @@ td.done .cell-sub {
   border-radius: 5px;
   background: var(--surface-2);
   color: var(--ink);
+}
+
+.flow-node .nf-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.flow-node .nf-option-x {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  padding: 0 6px;
+}
+
+/* Clear of the × that sits over the rule's right end. */
+.flow-node .nf-option .nf-or {
+  margin-right: 22px;
 }
 
 .flow-node .nf-portion {

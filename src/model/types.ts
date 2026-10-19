@@ -1,6 +1,6 @@
 /** Data model — §2 of SPEC.md. The graph is the source of truth. */
 
-export const RECIPE_VERSION = 1
+export const RECIPE_VERSION = 2
 export const BUNDLE_VERSION = 1
 
 export type Lang = 'en' | 'fr'
@@ -14,8 +14,8 @@ export type BaseNode = {
   inputs: string[]
 }
 
-export type IngredientNode = BaseNode & {
-  type: 'ingredient'
+/** One ingredient that can fill a slot: `250 g butter`, or its stand-in `250 g margarine`. */
+export type IngredientOption = {
   name: string
   /** empty qty/unit ⇒ the ingredient does not scale (§2.2) */
   qty?: number
@@ -27,6 +27,15 @@ export type IngredientNode = BaseNode & {
    */
   altQty?: number
   altUnit?: string
+}
+
+export type IngredientNode = BaseNode & {
+  type: 'ingredient'
+  /**
+   * §2.2 — the ingredient and its alternatives, any of which will do. Never empty; the
+   * first is the one the recipe is written around.
+   */
+  options: IngredientOption[]
   /** id of another recipe — a subrecipe reference */
   ref?: string
 }

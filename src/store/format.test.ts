@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import type { IngredientNode } from '../model/types'
+import type { IngredientOption } from '../model/types'
 import { ingredientLabel, qtyText } from './format'
 
-const ingredient = (extra: Partial<IngredientNode>): IngredientNode => ({
-  id: 'i1',
-  type: 'ingredient',
-  inputs: [],
+const ingredient = (extra: Partial<IngredientOption>): IngredientOption => ({
   name: 'yeast',
   ...extra,
 })

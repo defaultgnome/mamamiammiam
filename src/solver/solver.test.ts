@@ -15,9 +15,7 @@ const ing = (id: string, name = id): RecipeNode => ({
   id,
   type: 'ingredient',
   inputs: [],
-  name,
-  qty: 1,
-  unit: 'x',
+  options: [{ name, qty: 1, unit: 'x' }],
 })
 const act = (id: string, inputs: string[], label = id): RecipeNode => ({
   id,
