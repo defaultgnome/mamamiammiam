@@ -7,6 +7,7 @@ import { isModifiedLocally, uniqueId } from '../store/storage'
 import { servesText } from '../store/format'
 import { LangThemeControls, TopBar } from '../ui/TopBar'
 import { newRecipe } from '../model/factory'
+import { RATING_ICON, ratedClass } from '../ui/RatingButtons'
 
 /** Renders `text` with the matched runs wrapped in <mark>. */
 export function Highlight({ text, marks }: { text: string; marks?: Set<number> }) {
@@ -29,9 +30,21 @@ export function Highlight({ text, marks }: { text: string; marks?: Set<number> }
 export function ListPage({ route }: { route: Route }) {
   const { library, state, t, dispatch } = useApp()
   const [query, setQuery] = useQueryParam(route, 'q')
+  // Favourites include the super likes; super favourites are only those.
+  const [rated, setRated] = useQueryParam(route, 'rated')
 
   const index = useMemo(() => buildIndex(library), [library])
-  const results = useMemo(() => searchLibrary(index, query), [index, query])
+  const results = useMemo(
+    () =>
+      searchLibrary(index, query).filter(({ recipe }) =>
+        rated === 'like'
+          ? !!recipe.rating
+          : rated === 'superlike'
+            ? recipe.rating === rated
+            : true,
+      ),
+    [index, query, rated],
+  )
 
   const createRecipe = () => {
     const taken = new Set(library.map((r) => r.id))
@@ -62,7 +75,24 @@ export function ListPage({ route }: { route: Route }) {
           onChange={(e) => setQuery(e.target.value)}
         />
       </div>
-      <p className="hint">{t('list.searchHint')}</p>
+      <div className="list-filters">
+        <p className="hint">{t('list.searchHint')}</p>
+        <div className="seg rating" role="group" aria-label={t('rating.filter')}>
+          <button className="btn small" aria-pressed={!rated} onClick={() => setRated('')}>
+            {t('rating.all')}
+          </button>
+          {(['like', 'superlike'] as const).map((r) => (
+            <button
+              key={r}
+              className={`btn small rate-${r}`}
+              aria-pressed={rated === r}
+              onClick={() => setRated(rated === r ? '' : r)}
+            >
+              {RATING_ICON[r]} {t(`rating.only.${r}`)}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {library.length === 0 ? (
         <p className="empty">{t('list.none')}</p>
@@ -95,7 +125,12 @@ function RecipeCard({ hit }: { hit: SearchHit }) {
 
   return (
     <button className="card" onClick={() => navigate(`/recipe/${recipe.id}`)}>
-      <h3>
+      <h3 className={ratedClass(recipe.rating)}>
+        {recipe.rating && (
+          <span className="rating-icon" aria-label={t(`rating.${recipe.rating}`)}>
+            {RATING_ICON[recipe.rating]}{' '}
+          </span>
+        )}
         <Highlight text={recipe.title} marks={marks.get(markKey('title', recipe.title))} />
       </h3>
       <div className="meta">

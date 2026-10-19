@@ -1,5 +1,5 @@
-import type { Bundle, IngredientOption, Recipe, RecipeNode } from '../model/types'
-import { BUNDLE_VERSION, RECIPE_VERSION } from '../model/types'
+import type { Bundle, IngredientOption, Rating, Recipe, RecipeNode } from '../model/types'
+import { BUNDLE_VERSION, RATINGS, RECIPE_VERSION } from '../model/types'
 
 /** §7.2 — versioned key, so a format change never silently poisons an old overlay. */
 export const OVERLAY_KEY = 'mamamiammiam:v1:overlay'
@@ -78,7 +78,28 @@ export function migrateRecipe(input: Recipe): Recipe {
   r.prepMinutes = Number(r.prepMinutes) || 0
   r.lang = r.lang === 'fr' ? 'fr' : 'en'
   r.title ??= r.id
+  // Ratings used to be typed into the title or note as stars: ⭐ a like, ⭐⭐⭐ a super like.
+  const title = takeStars(r.title)
+  const note = takeStars(r.note ?? '')
+  r.title = title.text || r.title
+  if (note.stars) r.note = note.text
+  const stars = Math.max(title.stars, note.stars)
+  const legacy: Rating | undefined = stars >= 3 ? 'superlike' : stars > 0 ? 'like' : undefined
+  r.rating = RATINGS.includes(r.rating as Rating) ? r.rating : legacy
+  if (!r.rating) delete r.rating
   return r
+}
+
+function takeStars(text: string): { text: string; stars: number } {
+  const stars = [...text.matchAll(/⭐/g)].length
+  if (!stars) return { text, stars }
+  return {
+    text: text
+      .replace(/ *⭐+ */g, ' ')
+      .replace(/^ +| +$/gm, '')
+      .trim(),
+    stars,
+  }
 }
 
 function numberOrUndefined(value: unknown): number | undefined {

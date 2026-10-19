@@ -11,6 +11,7 @@ import { GraphCanvas, type Direction } from './GraphCanvas'
 import { useEditorDraft } from './useEditorDraft'
 import { downloadText, exportRecipe } from '../store/storage'
 import { NumberField } from '../ui/NumberField'
+import { RatingButtons } from '../ui/RatingButtons'
 
 export function EditorPage({ id }: { id: string }) {
   const { library, dispatch, t, lang } = useApp()
@@ -346,6 +347,14 @@ export function EditorPage({ id }: { id: string }) {
                 <option value="fr">Français</option>
               </select>
             </label>
+            <div className="field">
+              <span>{t('rating.label')}</span>
+              <RatingButtons
+                rating={draft.rating}
+                t={t}
+                onChange={(rating) => update((r) => ({ ...r, rating }))}
+              />
+            </div>
             <TagsField
               label={t('editor.tags')}
               tags={draft.tags}

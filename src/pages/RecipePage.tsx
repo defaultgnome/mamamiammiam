@@ -9,6 +9,7 @@ import { isModifiedLocally } from '../store/storage'
 import { usedIn } from '../model/subrecipes'
 import { servesText } from '../store/format'
 import { NumberField } from '../ui/NumberField'
+import { RatingButtons, ratedClass } from '../ui/RatingButtons'
 
 // The DOM-to-image library is only needed once you actually press Share.
 const ShareDialog = lazy(() =>
@@ -78,7 +79,7 @@ export function RecipePage({ id, initialServings }: { id: string; initialServing
       </TopBar>
 
       <div className="recipe-head">
-        <h1>{recipe.title}</h1>
+        <h1 className={ratedClass(recipe.rating)}>{recipe.title}</h1>
         <div className="time">
           {t('recipe.prep', { prep: formatDuration(recipe.prepMinutes) })}
           {' + '}
@@ -93,6 +94,15 @@ export function RecipePage({ id, initialServings }: { id: string; initialServing
             </span>
           ))}
         </div>
+        <RatingButtons
+          rating={recipe.rating}
+          t={t}
+          onChange={(rating) => {
+            const next = { ...recipe, rating }
+            if (!rating) delete next.rating
+            dispatch({ type: 'upsert', recipe: next })
+          }}
+        />
         {recipe.note && <div className="note">{recipe.note}</div>}
         {/* §2.2 — the end products this recipe goes into, found from their side. */}
         {parents.length > 0 && (

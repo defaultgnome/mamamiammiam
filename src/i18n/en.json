@@ -50,6 +50,14 @@
   "recipe.reset": "Reset",
   "recipe.or": "or",
 
+  "rating.label": "Rating",
+  "rating.like": "Like",
+  "rating.superlike": "Super like",
+  "rating.filter": "Show",
+  "rating.all": "All",
+  "rating.only.like": "Favourites",
+  "rating.only.superlike": "Super favourites",
+
   "share.title": "Share image",
   "share.theme": "Theme",
   "share.rendering": "Rendering…",

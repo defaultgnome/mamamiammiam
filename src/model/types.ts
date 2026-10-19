@@ -77,6 +77,11 @@ export type WaitNode = BaseNode & {
 
 export type RecipeNode = IngredientNode | SubrecipeNode | ActionNode | SplitNode | WaitNode
 
+/** How much the household loves a recipe. Absent means not rated. */
+export type Rating = 'like' | 'superlike'
+
+export const RATINGS: Rating[] = ['like', 'superlike']
+
 export type Recipe = {
   version: number
   /** human-readable slug, stable forever */
@@ -92,6 +97,8 @@ export type Recipe = {
   prepMinutes: number
   note?: string
   tags: string[]
+  /** stored in the bundle like any other field, so every device sees the same rating */
+  rating?: Rating
   nodes: RecipeNode[]
   /** presentation override, §3.2 */
   rowOrder: string[]

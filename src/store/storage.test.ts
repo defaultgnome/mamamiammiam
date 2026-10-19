@@ -88,3 +88,26 @@ describe('migrateRecipe', () => {
     ])
   })
 })
+
+describe('migrateRecipe ratings', () => {
+  it('turns title stars into a rating and drops them from the title', () => {
+    const three = migrateRecipe({ ...v1([]), title: 'Baguette ⭐⭐⭐' })
+    expect(three.title).toBe('Baguette')
+    expect(three.rating).toBe('superlike')
+    const one = migrateRecipe({ ...v1([]), title: 'Cake⭐ maison' })
+    expect(one.title).toBe('Cake maison')
+    expect(one.rating).toBe('like')
+  })
+
+  it('reads stars heading the note', () => {
+    const r = migrateRecipe({ ...v1([]), note: '⭐⭐⭐\nVerre plastique.' })
+    expect(r.note).toBe('Verre plastique.')
+    expect(r.rating).toBe('superlike')
+  })
+
+  it('keeps a stored rating and drops an unknown one', () => {
+    expect(migrateRecipe({ ...v1([]), rating: 'like' }).rating).toBe('like')
+    const bad = migrateRecipe({ ...v1([]), rating: 'meh' } as unknown as Recipe)
+    expect('rating' in bad).toBe(false)
+  })
+})

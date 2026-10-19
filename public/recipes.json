@@ -103,7 +103,7 @@
     {
       "version": 1,
       "id": "baguette-tradition",
-      "title": "Baguette francaise (Sarah pelissou) ⭐⭐⭐",
+      "title": "Baguette francaise (Sarah pelissou)",
       "lang": "fr",
       "servings": 4,
       "prepMinutes": 20,
@@ -112,6 +112,7 @@
         "pain",
         "Vu"
       ],
+      "rating": "superlike",
       "nodes": [
         {
           "id": "i-levure",
@@ -229,7 +230,7 @@
     {
       "version": 1,
       "id": "barres-cereales-maison",
-      "title": "Barres de céréales (Tehila)⭐⭐⭐",
+      "title": "Barres de céréales (Tehila)",
       "lang": "fr",
       "servings": 12,
       "prepMinutes": 20,
@@ -240,6 +241,7 @@
         "chocolat",
         "Vu"
       ],
+      "rating": "superlike",
       "nodes": [
         {
           "id": "i-avoine",
@@ -817,13 +819,14 @@
       "lang": "fr",
       "servings": 10,
       "prepMinutes": 20,
-      "note": "⭐⭐⭐\nVerre = verre plastique, 180 ml.\nTester à la pique avant de sortir du four.",
+      "note": "Verre = verre plastique, 180 ml.\nTester à la pique avant de sortir du four.",
       "tags": [
         "gâteau",
         "œufs",
         "orange",
         "Vu"
       ],
+      "rating": "superlike",
       "nodes": [
         {
           "id": "i-blancs",
@@ -965,7 +968,7 @@
     {
       "version": 1,
       "id": "bouscoutou-florence",
-      "title": "Bouscoutou de follie (florence) ⭐⭐⭐",
+      "title": "Bouscoutou de follie (florence)",
       "lang": "fr",
       "servings": 10,
       "prepMinutes": 25,
@@ -974,6 +977,7 @@
         "gâteau",
         "Vu"
       ],
+      "rating": "superlike",
       "nodes": [
         {
           "id": "i-jaunes",
@@ -1556,7 +1560,7 @@
     {
       "version": 1,
       "id": "cakes-mme-sayada",
-      "title": "Cakes de Mme Sayada ⭐⭐⭐",
+      "title": "Cakes de Mme Sayada",
       "lang": "fr",
       "servings": 20,
       "prepMinutes": 25,
@@ -1567,6 +1571,7 @@
         "four",
         "Vu"
       ],
+      "rating": "superlike",
       "nodes": [
         {
           "id": "i-farine",
@@ -5433,13 +5438,14 @@
       "lang": "fr",
       "servings": 7,
       "prepMinutes": 45,
-      "note": "⭐⭐⭐\nLe passage au frais est optionnel, mais il tient la pâte au découpage.\nAnneaux de 9 cm de diamètre externe, 2 cm au centre — un bouchon fait l'affaire.",
+      "note": "Le passage au frais est optionnel, mais il tient la pâte au découpage.\nAnneaux de 9 cm de diamètre externe, 2 cm au centre — un bouchon fait l'affaire.",
       "tags": [
         "beignets",
         "friture",
         "levée",
         "Vu"
       ],
+      "rating": "superlike",
       "nodes": [
         {
           "id": "i-farine",
@@ -6195,7 +6201,7 @@
     {
       "version": 1,
       "id": "untitled-2",
-      "title": "Pate brisee sucre (daniel)/ Base de tarte ⭐⭐⭐",
+      "title": "Pate brisee sucre (daniel)/ Base de tarte",
       "lang": "en",
       "servings": 1,
       "prepMinutes": 10,
@@ -6205,6 +6211,7 @@
         "dessert",
         "Vu"
       ],
+      "rating": "superlike",
       "nodes": [
         {
           "id": "iz6j0m",
@@ -6304,7 +6311,7 @@
     {
       "version": 1,
       "id": "untitled-3",
-      "title": "Base tarte salee (daniel) ⭐⭐⭐",
+      "title": "Base tarte salee (daniel)",
       "lang": "fr",
       "servings": 2,
       "prepMinutes": 10,
@@ -6314,6 +6321,7 @@
         "dessert",
         "Vu"
       ],
+      "rating": "superlike",
       "nodes": [
         {
           "id": "i9mioy",
@@ -6421,7 +6429,7 @@
           "id": "ikhin1a",
           "type": "ingredient",
           "inputs": [],
-          "name": "Base tarte salee (daniel) ⭐⭐⭐",
+          "name": "Base tarte salee (daniel)",
           "qty": 1,
           "unit": "a la tunisienne"
         },
