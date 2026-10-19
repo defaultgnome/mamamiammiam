@@ -29,6 +29,7 @@
   "list.clearSearch": "Effacer la recherche",
 
   "recipe.serves": "Pour {n}",
+  "recipe.yield": "Pour {n} {unit}",
   "recipe.servings": "Portions",
   "recipe.prep": "préparation {prep}",
   "recipe.wait": "attente {wait}",
@@ -62,6 +63,8 @@
   "editor.recipeTitle": "Titre",
   "editor.tags": "Tags (séparés par des virgules)",
   "editor.servingsBase": "Portions de référence",
+  "editor.servingsUnitHint": "personnes",
+  "editor.servingsUnit": "Unité",
   "editor.prepMinutes": "Minutes de préparation",
   "editor.noteField": "Note",
   "editor.lang": "Langue du contenu",

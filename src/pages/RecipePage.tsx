@@ -6,7 +6,7 @@ import { Diagram, type Orientation } from '../ui/Diagram'
 import { LangThemeControls, TopBar } from '../ui/TopBar'
 import { useWakeLock } from '../ui/useWakeLock'
 import { isModifiedLocally } from '../store/storage'
-import { formatServings } from '../store/format'
+import { servesText } from '../store/format'
 import { NumberField } from '../ui/NumberField'
 
 // The DOM-to-image library is only needed once you actually press Share.
@@ -114,7 +114,7 @@ export function RecipePage({ id }: { id: string }) {
           onChange={setServings}
         />
         <span className="hint">
-          {t('recipe.serves', { n: formatServings(effectiveServings, lang) })}
+          {servesText(t, effectiveServings, recipe.servingsUnit, lang)}
         </span>
         {servings !== null && servings !== recipe.servings && (
           <button className="btn ghost small" onClick={() => setServings(null)}>

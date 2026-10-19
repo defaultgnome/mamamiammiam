@@ -1,5 +1,5 @@
 import type { IngredientNode, Lang } from '../model/types'
-import { localeOf } from '../i18n'
+import { localeOf, type Translate } from '../i18n'
 
 /**
  * §4.4 — scaling is exact, no rounding: the cook rounds. Repeating decimals are
@@ -54,4 +54,17 @@ export function ingredientLabel(node: IngredientNode, multiplier: number, lang: 
 
 export function formatServings(n: number, lang: Lang): string {
   return new Intl.NumberFormat(localeOf(lang), { maximumFractionDigits: 2 }).format(n)
+}
+
+/** `Serves 6`, or `For 1 quiche` once the recipe says what it makes (§2.1). */
+export function servesText(
+  t: Translate,
+  n: number,
+  unit: string | undefined,
+  lang: Lang,
+): string {
+  const count = formatServings(n, lang)
+  return unit?.trim()
+    ? t('recipe.yield', { n: count, unit: unit.trim() })
+    : t('recipe.serves', { n: count })
 }

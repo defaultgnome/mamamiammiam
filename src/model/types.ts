@@ -62,6 +62,11 @@ export type Recipe = {
   title: string
   lang: Lang
   servings: number
+  /**
+   * What `servings` counts — `people`, `quiche`, `tart base`. Free text; empty means
+   * people. It is also the recipe's yield: a subrecipe is asked for in this unit.
+   */
+  servingsUnit?: string
   prepMinutes: number
   note?: string
   tags: string[]

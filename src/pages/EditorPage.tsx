@@ -309,6 +309,19 @@ export function EditorPage({ id }: { id: string }) {
                 />
               </label>
               <label className="field" style={{ flex: 1 }}>
+                <span>{t('editor.servingsUnit')}</span>
+                <input
+                  type="text"
+                  placeholder={t('editor.servingsUnitHint')}
+                  value={draft.servingsUnit ?? ''}
+                  onChange={(e) =>
+                    update((r) => ({ ...r, servingsUnit: e.target.value || undefined }))
+                  }
+                />
+              </label>
+            </div>
+            <div className="row">
+              <label className="field" style={{ flex: 1 }}>
                 <span>{t('editor.prepMinutes')}</span>
                 <NumberField
                   min={0}

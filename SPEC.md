@@ -87,6 +87,7 @@ type Recipe = {
   title: string
   lang: 'en' | 'fr' // language the content is authored in
   servings: number // baseline for the multiplier
+  servingsUnit?: string // what servings counts: 'quiche', 'tart base'; empty = people
   prepMinutes: number // manual estimate of active time
   note?: string // free text: tools, provenance, anything
   tags: string[]
@@ -96,6 +97,10 @@ type Recipe = {
 ```
 
 `note` is plain multi-line text. Line breaks are rendered; no markdown parsing.
+
+`servingsUnit` is free text in the recipe's own language. Empty reads `Serves 6`; set, it
+reads `For 1 quiche`. It is also the recipe's **yield**: a subrecipe node asks for a
+quantity of it (§2.2).
 
 ### 2.2 Nodes
 

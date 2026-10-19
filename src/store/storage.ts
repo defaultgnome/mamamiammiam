@@ -74,6 +74,7 @@ export function migrateRecipe(input: Recipe): Recipe {
   r.rowOrder ??= []
   r.nodes = (r.nodes ?? []).map(migrateNode)
   r.servings = Number(r.servings) || 1
+  r.servingsUnit = r.servingsUnit?.trim() || undefined
   r.prepMinutes = Number(r.prepMinutes) || 0
   r.lang = r.lang === 'fr' ? 'fr' : 'en'
   r.title ??= r.id

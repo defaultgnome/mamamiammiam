@@ -29,6 +29,7 @@
   "list.clearSearch": "Clear search",
 
   "recipe.serves": "Serves {n}",
+  "recipe.yield": "For {n} {unit}",
   "recipe.servings": "Servings",
   "recipe.prep": "prep {prep}",
   "recipe.wait": "wait {wait}",
@@ -62,6 +63,8 @@
   "editor.recipeTitle": "Title",
   "editor.tags": "Tags (comma separated)",
   "editor.servingsBase": "Baseline servings",
+  "editor.servingsUnitHint": "people",
+  "editor.servingsUnit": "Unit",
   "editor.prepMinutes": "Prep minutes",
   "editor.noteField": "Note",
   "editor.lang": "Content language",

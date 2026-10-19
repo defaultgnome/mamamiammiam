@@ -4,6 +4,7 @@ import { useApp } from '../store/app'
 import { navigate, useQueryParam, type Route } from '../store/router'
 import { criticalPath, formatDuration } from '../solver/time'
 import { isModifiedLocally, uniqueId } from '../store/storage'
+import { servesText } from '../store/format'
 import { LangThemeControls, TopBar } from '../ui/TopBar'
 import { newRecipe } from '../model/factory'
 
@@ -79,7 +80,7 @@ export function ListPage({ route }: { route: Route }) {
 }
 
 function RecipeCard({ hit }: { hit: SearchHit }) {
-  const { t, state } = useApp()
+  const { t, state, lang } = useApp()
   const { recipe, marks } = hit
   const wait = criticalPath(recipe.nodes)
   const total = recipe.prepMinutes + wait
@@ -98,7 +99,7 @@ function RecipeCard({ hit }: { hit: SearchHit }) {
         <Highlight text={recipe.title} marks={marks.get(markKey('title', recipe.title))} />
       </h3>
       <div className="meta">
-        {formatDuration(total)} · {t('recipe.serves', { n: recipe.servings })}
+        {formatDuration(total)} · {servesText(t, recipe.servings, recipe.servingsUnit, lang)}
       </div>
       {matchedIngredients.length > 0 && (
         <div className="matched">

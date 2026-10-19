@@ -4,7 +4,7 @@ import type { Recipe } from '../model/types'
 import { useApp } from '../store/app'
 import { criticalPath, formatDuration } from '../solver/time'
 import { Diagram, type Orientation } from './Diagram'
-import { formatServings } from '../store/format'
+import { servesText } from '../store/format'
 import { rasterScale } from './rasterScale'
 
 type Props = {
@@ -223,7 +223,7 @@ export function ShareDialog({ recipe, multiplier, servings, orientation, onClose
               {t('recipe.wait', { wait: formatDuration(wait) })} ={' '}
               <b>{formatDuration(recipe.prepMinutes + wait)}</b>
               {' · '}
-              {t('recipe.serves', { n: formatServings(servings, lang) })}
+              {servesText(t, servings, recipe.servingsUnit, lang)}
             </div>
             {recipe.note && <div className="note">{recipe.note}</div>}
           </div>
